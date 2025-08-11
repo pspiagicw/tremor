@@ -1,6 +1,9 @@
 package ast
 
-import "strings"
+import (
+	"github.com/pspiagicw/fener/token"
+	"strings"
+)
 
 type Node interface {
 	String() string
@@ -53,4 +56,18 @@ type NumberExpression struct {
 func (n NumberExpression) expressionNode() {}
 func (n NumberExpression) String() string {
 	return n.Value
+}
+
+type BinaryExpression struct {
+	Left     Expression
+	Right    Expression
+	Operator *token.Token
+}
+
+func (b BinaryExpression) expressionNode() {}
+func (b BinaryExpression) String() string {
+
+	elements := []string{b.Left.String(), b.Operator.Value, b.Right.String()}
+
+	return strings.Join(elements, " ")
 }
