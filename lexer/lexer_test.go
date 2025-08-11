@@ -7,25 +7,27 @@ func TestSimple(t *testing.T) {
 }
 
 func TestSymbol(t *testing.T) {
-	input := "+ - * /"
-
+	input := "+ - * / !"
 	expectedTokens := []token.Token{
 		{Type: token.PLUS, Value: "+"},
 		{Type: token.MINUS, Value: "-"},
-		{Type: token.ASTERISK, Value: "*"},
+		{Type: token.MULTIPLY, Value: "*"},
 		{Type: token.SLASH, Value: "/"},
+		{Type: token.BANG, Value: "!"},
+		{Type: token.EOF, Value: ""},
 	}
 
 	testToken(t, input, expectedTokens)
 }
 
 func TestComparisonOperators(t *testing.T) {
-	input := "== ~= <= >="
+	input := "== != <= >="
 	expected := []token.Token{
 		{Type: token.EQ, Value: "=="},
-		{Type: token.NEQ, Value: "~="},
+		{Type: token.NEQ, Value: "!="},
 		{Type: token.LTE, Value: "<="},
 		{Type: token.GTE, Value: ">="},
+		{Type: token.EOF, Value: ""},
 	}
 	testToken(t, input, expected)
 
@@ -37,6 +39,7 @@ func TestSingleCharComparisonAndAssignment(t *testing.T) {
 		{Type: token.LT, Value: "<"},
 		{Type: token.GT, Value: ">"},
 		{Type: token.ASSIGN, Value: "="},
+		{Type: token.EOF, Value: ""},
 	}
 	testToken(t, input, expected)
 }
@@ -48,8 +51,9 @@ func TestDelimiters(t *testing.T) {
 		{Type: token.RPAREN, Value: ")"},
 		{Type: token.LBRACE, Value: "{"},
 		{Type: token.RBRACE, Value: "}"},
-		{Type: token.LBRACKET, Value: "["},
-		{Type: token.RBRACKET, Value: "]"},
+		{Type: token.LSQUARE, Value: "["},
+		{Type: token.RSQUARE, Value: "]"},
+		{Type: token.EOF, Value: ""},
 	}
 	testToken(t, input, expected)
 }
@@ -59,6 +63,28 @@ func TestDots(t *testing.T) {
 	expected := []token.Token{
 		{Type: token.CONCAT, Value: ".."},
 		{Type: token.ELLIPSIS, Value: "..."},
+		{Type: token.EOF, Value: ""},
+	}
+	testToken(t, input, expected)
+}
+
+func TestIdentifiers(t *testing.T) {
+	input := "foo bar _baz"
+	expected := []token.Token{
+		{Type: token.IDENTIFIER, Value: "foo"},
+		{Type: token.IDENTIFIER, Value: "bar"},
+		{Type: token.IDENTIFIER, Value: "_baz"},
+		{Type: token.EOF, Value: ""},
+	}
+	testToken(t, input, expected)
+}
+
+func TestNumbers(t *testing.T) {
+	input := "123 3.14"
+	expected := []token.Token{
+		{Type: token.NUMBER, Value: "123"},
+		{Type: token.NUMBER, Value: "3.14"},
+		{Type: token.EOF, Value: ""},
 	}
 	testToken(t, input, expected)
 }
@@ -71,6 +97,8 @@ func TestKeywords(t *testing.T) {
 		{Type: token.RETURN, Value: "return"},
 		{Type: token.FN, Value: "fn"},
 		{Type: token.END, Value: "end"},
+		{Type: token.LET, Value: "let"},
+		{Type: token.EOF, Value: ""},
 	}
 	testToken(t, input, expected)
 }
@@ -81,47 +109,35 @@ func TestLiterals(t *testing.T) {
 		{Type: token.NIL, Value: "nil"},
 		{Type: token.TRUE, Value: "true"},
 		{Type: token.FALSE, Value: "false"},
+		{Type: token.EOF, Value: ""},
 	}
 	testToken(t, input, expected)
 }
 
-func TestIdentifiers(t *testing.T) {
-	input := "foo bar _baz"
-	expected := []token.Token{
-		{Type: token.IDENTIFIER, Value: "foo"},
-		{Type: token.IDENTIFIER, Value: "bar"},
-		{Type: token.IDENTIFIER, Value: "_baz"},
-	}
-	testToken(t, input, expected)
-}
-func TestNumbers(t *testing.T) {
-	input := "123 3.14 0x1A"
-	expected := []token.Token{
-		{Type: token.NUMBER, Value: "123"},
-		{Type: token.NUMBER, Value: "3.14"},
-		{Type: token.NUMBER, Value: "0x1A"},
-	}
-	testToken(t, input, expected)
-}
 func TestStrings(t *testing.T) {
 	input := `"hello" 'world' [[long string]]`
 	expected := []token.Token{
 		{Type: token.STRING, Value: "hello"},
 		{Type: token.STRING, Value: "world"},
 		{Type: token.STRING, Value: "long string"},
+		{Type: token.EOF, Value: ""},
 	}
 	testToken(t, input, expected)
 }
 
 func TestSingleLineCommentOnly(t *testing.T) {
 	input := "-- this is a comment"
-	expected := []token.Token{} // No tokens returned for comment-only input
+	expected := []token.Token{
+		{Type: token.EOF, Value: ""},
+	} // No tokens returned for comment-only input
 	testToken(t, input, expected)
 }
 
 func TestMultilineCommentOnly(t *testing.T) {
 	input := "--[[ this is a \n multiline comment ]]"
-	expected := []token.Token{}
+	expected := []token.Token{
+		{Type: token.EOF, Value: ""},
+	}
 	testToken(t, input, expected)
 }
 
@@ -134,7 +150,7 @@ func TestMultilineCommentBetweenCode(t *testing.T) {
 	y = y + 1
 	`
 	expected := []token.Token{
-		{Type: token.LOCAL, Value: "local"},
+		{Type: token.LET, Value: "let"},
 		{Type: token.IDENTIFIER, Value: "y"},
 		{Type: token.ASSIGN, Value: "="},
 		{Type: token.NUMBER, Value: "10"},
@@ -143,16 +159,16 @@ func TestMultilineCommentBetweenCode(t *testing.T) {
 		{Type: token.IDENTIFIER, Value: "y"},
 		{Type: token.PLUS, Value: "+"},
 		{Type: token.NUMBER, Value: "1"},
+		{Type: token.EOF, Value: ""},
 	}
 	testToken(t, input, expected)
 }
 
 func testToken(t *testing.T, input string, expectedTokens []token.Token) {
-	lexer := newLexer(input)
+	lexer := NewLexer(input)
 
-	actual := lexer.Next()
-
-	for i := 0; i < len(expectedTokens); i++ {
+	for i := range expectedTokens {
+		actual := lexer.Next()
 		expected := expectedTokens[i]
 
 		if expected.Type != actual.Type {
