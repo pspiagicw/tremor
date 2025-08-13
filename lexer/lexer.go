@@ -160,6 +160,8 @@ func predictType(input string) token.TokenType {
 		return token.AND
 	case token.OR:
 		return token.OR
+	case token.THEN:
+		return token.THEN
 	default:
 		return token.IDENTIFIER
 

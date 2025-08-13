@@ -1,8 +1,9 @@
 package ast
 
 import (
-	"github.com/pspiagicw/fener/token"
 	"strings"
+
+	"github.com/pspiagicw/fener/token"
 )
 
 type StringType int
@@ -188,4 +189,79 @@ func (f FieldExpression) String() string {
 	elements := []string{f.Caller.String(), ".", f.Field.String()}
 
 	return strings.Join(elements, "")
+}
+
+type BlockStatement struct {
+	Statements []Statement
+}
+
+func (b BlockStatement) statementNode() {}
+func (b BlockStatement) String() string {
+	statementStrings := []string{}
+
+	for _, statement := range b.Statements {
+		statementStrings = append(statementStrings, statement.String())
+	}
+
+	return strings.Join(statementStrings, " ")
+}
+
+type IfStatement struct {
+	Condition   Expression
+	Consequence *BlockStatement
+	Alternative *BlockStatement
+}
+
+func (i IfStatement) statementNode() {}
+func (i IfStatement) String() string {
+	elements := []string{"if", i.Condition.String(), "then", i.Consequence.String()}
+
+	if i.Alternative != nil {
+		elements = append(elements, "else")
+		elements = append(elements, i.Alternative.String())
+	}
+
+	elements = append(elements, "end")
+
+	return strings.Join(elements, " ")
+}
+
+type ExpressionStatement struct {
+	Inside Expression
+}
+
+func (e ExpressionStatement) statementNode() {}
+func (e ExpressionStatement) String() string {
+	return e.Inside.String()
+}
+
+type ReturnStatement struct {
+	Value Expression
+}
+
+func (r ReturnStatement) statementNode() {}
+func (r ReturnStatement) String() string {
+	elements := []string{"return", r.Value.String()}
+
+	return strings.Join(elements, " ")
+}
+
+type FunctionStatement struct {
+	Name *token.Token
+	Args []*token.Token
+	Body *BlockStatement
+}
+
+func (f FunctionStatement) statementNode() {}
+func (f FunctionStatement) String() string {
+	args := []string{}
+	for _, arg := range f.Args {
+		args = append(args, arg.Value)
+	}
+
+	headerString := f.Name.Value + "(" + strings.Join(args, ", ") + ")"
+
+	elements := []string{"fn", headerString, "then", f.Body.String(), "end"}
+
+	return strings.Join(elements, " ")
 }

@@ -117,7 +117,7 @@ func TestPrecedenceWithParentheses(t *testing.T) {
 func TestStringSingleQuotes(t *testing.T) {
 	input := "let a = 'single quoted string'"
 
-	expected := "let a = \"single quoted string\""
+	expected := "let a = 'single quoted string'"
 
 	testParser(t, input, expected)
 }
@@ -432,7 +432,7 @@ func TestPrec_CompAdd(t *testing.T) {
 
 func TestPrec_AddComp(t *testing.T) {
 	input := "let a = 1 == 2 + 3"
-	expected := "let a = (1 == (2 + 3)"
+	expected := "let a = (1 == (2 + 3))"
 	testParser(t, input, expected)
 }
 

@@ -3,7 +3,6 @@ package parser
 import (
 	"testing"
 
-	"github.com/pspiagicw/fener/ast"
 	"github.com/pspiagicw/fener/lexer"
 )
 
@@ -23,6 +22,58 @@ func TestMultipleStatements(t *testing.T) {
 	testParser(t, input, expected)
 }
 
+func TestIfStatement(t *testing.T) {
+	input := `if true then print("true") end`
+
+	expected := `if true then print("true") end`
+
+	testParser(t, input, expected)
+}
+
+func TestIfElseStatement(t *testing.T) {
+	input := `if true then print("true") else print("false") end`
+
+	expected := `if true then print("true") else print("false") end`
+
+	testParser(t, input, expected)
+}
+
+func TestReturnStatement(t *testing.T) {
+	input := `return 1`
+
+	testParser(t, input, input)
+}
+
+func TestExpressionStatement(t *testing.T) {
+	input := `1`
+
+	expected := `1`
+
+	testParser(t, input, expected)
+}
+
+func TestExpressionStatementComplex(t *testing.T) {
+	input := `1 + 2 * 3`
+
+	expected := `(1 + (2 * 3))`
+
+	testParser(t, input, expected)
+}
+func TestFunctionStatement(t *testing.T) {
+	input := `fn hello() then print("Hello, World") end`
+
+	testParser(t, input, input)
+}
+
+func TestFunctionStatementComplex(t *testing.T) {
+	input := `fn hello(a, b) then return a + b end`
+
+	expected := `fn hello(a, b) then return (a + b) end`
+
+	testParser(t, input, expected)
+
+}
+
 func testParser(t *testing.T, input string, expected string) {
 	l := lexer.NewLexer(input)
 	p := NewParser(l)
@@ -31,38 +82,12 @@ func testParser(t *testing.T, input string, expected string) {
 
 	result := node.String()
 
-	if input != result {
-		t.Logf("Expected '%q', got '%q' ", expected, result)
-		for i := range expected {
-			if expected[i] != result[i] {
-				t.Fatalf("Diff at %d: %q vs %q\n", i, expected[i], result[i])
-				break
-			}
-		}
-
+	if len(expected) != len(result) {
+		t.Errorf("The length doesn't match, expected: %d, got: %d", len(expected), len(result))
 	}
 
-}
+	if expected != result {
+		t.Fatalf("Expected '%q', got '%q' ", expected, result)
+	}
 
-func TestParser_parseFunctionCallExpression(t *testing.T) {
-	tests := []struct {
-		name string // description of this test case
-		// Named input parameters for receiver constructor.
-		l *lexer.Lexer
-		// Named input parameters for target function.
-		left ast.Expression
-		want ast.Expression
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			p := NewParser(tt.l)
-			got := p.parseFunctionCallExpression(tt.left)
-			// TODO: update the condition below to compare got with tt.want.
-			if true {
-				t.Errorf("parseFunctionCallExpression() = %v, want %v", got, tt.want)
-			}
-		})
-	}
 }

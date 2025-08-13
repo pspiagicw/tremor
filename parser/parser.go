@@ -129,10 +129,60 @@ func (p *Parser) parseStatement() ast.Statement {
 	switch p.current.Type {
 	case token.LET:
 		return p.parseLetStatements()
+	case token.IF:
+		return p.parseIfStatement()
+	case token.RETURN:
+		return p.parseReturnStatement()
+	case token.FN:
+		return p.parseFunctionStatement()
 	default:
-		log.Fatalf("Can't start statement with '%s'", p.current.Type)
-		return nil
+		return p.parseExpressionStatement()
 	}
+}
+func (p *Parser) parseFunctionStatement() ast.FunctionStatement {
+	p.advance()
+
+	f := ast.FunctionStatement{}
+
+	p.expect(p.current, token.IDENTIFIER)
+	f.Name = p.current
+
+	p.advance()
+
+	p.expect(p.current, token.LPAREN)
+	p.advance()
+
+	f.Args = []*token.Token{}
+
+	for p.current.Type != token.RPAREN {
+		p.expect(p.current, token.IDENTIFIER)
+		f.Args = append(f.Args, p.current)
+		p.advance()
+		if p.current.Type == token.COMMA {
+			p.advance()
+		}
+	}
+
+	p.expect(p.current, token.RPAREN)
+	p.advance()
+
+	p.expect(p.current, token.THEN)
+	p.advance()
+
+	f.Body = p.parseBlockStatement()
+
+	p.expect(p.current, token.END)
+	p.advance()
+
+	return f
+
+}
+func (p *Parser) parseExpressionStatement() ast.ExpressionStatement {
+	e := ast.ExpressionStatement{}
+
+	e.Inside = p.parseExpression(LOWEST)
+
+	return e
 }
 func (p *Parser) parseLetStatements() ast.LetStatement {
 	p.advance()
@@ -152,6 +202,50 @@ func (p *Parser) parseLetStatements() ast.LetStatement {
 	let.Value = p.parseExpression(LOWEST)
 
 	return let
+}
+func (p *Parser) parseReturnStatement() ast.ReturnStatement {
+
+	p.advance()
+
+	r := ast.ReturnStatement{}
+
+	r.Value = p.parseExpression(LOWEST)
+
+	return r
+}
+func (p *Parser) parseIfStatement() ast.IfStatement {
+	p.advance()
+
+	i := ast.IfStatement{}
+
+	i.Condition = p.parseExpression(LOWEST)
+
+	p.expect(p.current, token.THEN)
+	p.advance()
+
+	i.Consequence = p.parseBlockStatement()
+
+	switch p.current.Type {
+	case token.ELSE:
+		p.advance()
+		i.Alternative = p.parseBlockStatement()
+	}
+
+	p.expect(p.current, token.END)
+
+	p.advance()
+
+	return i
+}
+func (p *Parser) parseBlockStatement() *ast.BlockStatement {
+	b := &ast.BlockStatement{}
+
+	b.Statements = []ast.Statement{}
+	for p.current.Type != token.EOF && p.current.Type != token.END && p.current.Type != token.ELSE {
+		b.Statements = append(b.Statements, p.parseStatement())
+	}
+
+	return b
 }
 func (p *Parser) parseExpression(precedence int) ast.Expression {
 	prefixFn := p.prefixParseFnMap[p.current.Type]

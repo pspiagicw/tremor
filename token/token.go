@@ -53,6 +53,7 @@ const (
 	NOT   = "NOT"
 	AND   = "AND"
 	OR    = "OR"
+	THEN  = "THEN"
 
 	IDENTIFIER = "IDENTIFIER"
 	NUMBER     = "NUMBER"
