@@ -154,6 +154,12 @@ func predictType(input string) token.TokenType {
 		return token.TRUE
 	case token.FALSE:
 		return token.FALSE
+	case token.NOT:
+		return token.NOT
+	case token.AND:
+		return token.AND
+	case token.OR:
+		return token.OR
 	default:
 		return token.IDENTIFIER
 
@@ -177,6 +183,12 @@ func (l *Lexer) Next() *token.Token {
 			return l.Next()
 		}
 		return newToken(token.MINUS, l.current())
+	case "%":
+		return newToken(token.MODULUS, l.current())
+	case ",":
+		return newToken(token.COMMA, l.current())
+	case "^":
+		return newToken(token.EXPONENT, l.current())
 	case "*":
 		return newToken(token.MULTIPLY, l.current())
 	case "/":
@@ -193,7 +205,7 @@ func (l *Lexer) Next() *token.Token {
 		if l.peek() == "[" {
 			l.advance()
 			value := l.longString()
-			return newToken(token.STRING, value)
+			return newToken(token.STRING_MULTILINE, value)
 		}
 		return newToken(token.LSQUARE, l.current())
 	case "]":
@@ -207,7 +219,7 @@ func (l *Lexer) Next() *token.Token {
 			}
 			return newToken(token.CONCAT, "..")
 		}
-		return newToken(token.INVALID, l.current())
+		return newToken(token.DOT, l.current())
 	case "=":
 		if l.peek() == "=" {
 			l.advance()
@@ -234,10 +246,10 @@ func (l *Lexer) Next() *token.Token {
 		return newToken(token.GT, l.current())
 	case "'":
 		value := l.string(l.current())
-		return newToken(token.STRING, value)
+		return newToken(token.STRING_SINGLE, value)
 	case "\"":
 		value := l.string(l.current())
-		return newToken(token.STRING, value)
+		return newToken(token.STRING_DOUBLE, value)
 	default:
 		if isAlpha(l.current()) {
 			value := l.identifier()

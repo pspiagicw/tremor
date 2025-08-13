@@ -7,13 +7,17 @@ func TestSimple(t *testing.T) {
 }
 
 func TestSymbol(t *testing.T) {
-	input := "+ - * / !"
+	input := "+ - * / ! % ^ , ."
 	expectedTokens := []token.Token{
 		{Type: token.PLUS, Value: "+"},
 		{Type: token.MINUS, Value: "-"},
 		{Type: token.MULTIPLY, Value: "*"},
 		{Type: token.SLASH, Value: "/"},
 		{Type: token.BANG, Value: "!"},
+		{Type: token.MODULUS, Value: "%"},
+		{Type: token.EXPONENT, Value: "^"},
+		{Type: token.COMMA, Value: ","},
+		{Type: token.DOT, Value: "."},
 		{Type: token.EOF, Value: ""},
 	}
 
@@ -90,7 +94,7 @@ func TestNumbers(t *testing.T) {
 }
 
 func TestKeywords(t *testing.T) {
-	input := "if else return fn end let"
+	input := "if else return fn end let not and or"
 	expected := []token.Token{
 		{Type: token.IF, Value: "if"},
 		{Type: token.ELSE, Value: "else"},
@@ -98,6 +102,9 @@ func TestKeywords(t *testing.T) {
 		{Type: token.FN, Value: "fn"},
 		{Type: token.END, Value: "end"},
 		{Type: token.LET, Value: "let"},
+		{Type: token.NOT, Value: "not"},
+		{Type: token.AND, Value: "and"},
+		{Type: token.OR, Value: "or"},
 		{Type: token.EOF, Value: ""},
 	}
 	testToken(t, input, expected)
@@ -117,9 +124,9 @@ func TestLiterals(t *testing.T) {
 func TestStrings(t *testing.T) {
 	input := `"hello" 'world' [[long string]]`
 	expected := []token.Token{
-		{Type: token.STRING, Value: "hello"},
-		{Type: token.STRING, Value: "world"},
-		{Type: token.STRING, Value: "long string"},
+		{Type: token.STRING_DOUBLE, Value: "hello"},
+		{Type: token.STRING_SINGLE, Value: "world"},
+		{Type: token.STRING_MULTILINE, Value: "long string"},
 		{Type: token.EOF, Value: ""},
 	}
 	testToken(t, input, expected)

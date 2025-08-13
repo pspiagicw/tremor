@@ -11,12 +11,39 @@ import (
 const (
 	_ = iota
 	LOWEST
+	OR
+	AND
+	COMPARISON
+	CONCAT
 	BINARY
+	MULTIPLY
+	EXPONENT
+	UNARY
+	CALL
+	INDEX
+	FIELD
 )
 
 var precedence = map[token.TokenType]int{
-	token.PLUS:  BINARY,
-	token.MINUS: BINARY,
+	token.PLUS:     BINARY,
+	token.MINUS:    BINARY,
+	token.MULTIPLY: MULTIPLY,
+	token.SLASH:    MULTIPLY,
+	token.MODULUS:  MULTIPLY,
+	token.EXPONENT: EXPONENT,
+	token.CONCAT:   CONCAT,
+	token.NOT:      UNARY,
+	token.AND:      AND,
+	token.OR:       OR,
+	token.EQ:       COMPARISON,
+	token.NEQ:      COMPARISON,
+	token.LPAREN:   CALL,
+	token.LSQUARE:  INDEX,
+	token.DOT:      FIELD,
+	token.GT:       COMPARISON,
+	token.LT:       COMPARISON,
+	token.LTE:      COMPARISON,
+	token.GTE:      COMPARISON,
 }
 
 func NewParser(l *lexer.Lexer) *Parser {
@@ -27,9 +54,34 @@ func NewParser(l *lexer.Lexer) *Parser {
 	}
 
 	p.registerPrefixFn(token.NUMBER, p.parseNumberExpression)
+	p.registerPrefixFn(token.MINUS, p.parsePrefixExpression)
+	p.registerPrefixFn(token.NOT, p.parsePrefixExpression)
+	p.registerPrefixFn(token.TRUE, p.parseBooleanExpression)
+	p.registerPrefixFn(token.FALSE, p.parseBooleanExpression)
+	p.registerPrefixFn(token.LPAREN, p.parseParenthesisExpression)
+	p.registerPrefixFn(token.STRING_DOUBLE, p.parseStringExpression)
+	p.registerPrefixFn(token.STRING_SINGLE, p.parseStringExpression)
+	p.registerPrefixFn(token.STRING_MULTILINE, p.parseStringExpression)
+	p.registerPrefixFn(token.IDENTIFIER, p.parseIdentifierExpression)
 
 	p.registerInfixFn(token.PLUS, p.parseBinaryExpression)
 	p.registerInfixFn(token.MINUS, p.parseBinaryExpression)
+	p.registerInfixFn(token.MULTIPLY, p.parseBinaryExpression)
+	p.registerInfixFn(token.SLASH, p.parseBinaryExpression)
+	p.registerInfixFn(token.MODULUS, p.parseBinaryExpression)
+	p.registerInfixFn(token.EXPONENT, p.parseBinaryExpression)
+	p.registerInfixFn(token.CONCAT, p.parseBinaryExpression)
+	p.registerInfixFn(token.AND, p.parseBinaryExpression)
+	p.registerInfixFn(token.OR, p.parseBinaryExpression)
+	p.registerInfixFn(token.EQ, p.parseBinaryExpression)
+	p.registerInfixFn(token.NEQ, p.parseBinaryExpression)
+	p.registerInfixFn(token.LPAREN, p.parseFunctionCallExpression)
+	p.registerInfixFn(token.LSQUARE, p.parseIndexExpression)
+	p.registerInfixFn(token.DOT, p.parseFieldExpression)
+	p.registerInfixFn(token.GT, p.parseBinaryExpression)
+	p.registerInfixFn(token.LT, p.parseBinaryExpression)
+	p.registerInfixFn(token.LTE, p.parseBinaryExpression)
+	p.registerInfixFn(token.GTE, p.parseBinaryExpression)
 
 	p.advance()
 	return p
@@ -146,6 +198,65 @@ func (p *Parser) parseNumberExpression() ast.Expression {
 	p.advance()
 	return n
 }
+func (p *Parser) parseStringExpression() ast.Expression {
+	s := ast.StringExpression{
+		Value: p.current.Value,
+	}
+
+	switch p.current.Type {
+	case token.STRING_DOUBLE:
+		s.Type = ast.DOUBLE_QUOTED
+	case token.STRING_SINGLE:
+		s.Type = ast.SINGLE_QUOTED
+	default:
+		s.Type = ast.MULTILINE
+	}
+
+	p.advance()
+	return s
+}
+
+func (p *Parser) parseIdentifierExpression() ast.Expression {
+	i := ast.IdentifierExpression{
+		Value: p.current,
+	}
+
+	p.advance()
+	return i
+}
+func (p *Parser) parseBooleanExpression() ast.Expression {
+	b := ast.BooleanExpression{
+		Value: p.current,
+	}
+	p.advance()
+
+	return b
+}
+func (p *Parser) parseParenthesisExpression() ast.Expression {
+	exp := ast.ParenthesisExpression{}
+
+	p.advance()
+
+	exp.Inside = p.parseExpression(LOWEST)
+
+	// Skip over the ending round brackets.
+	p.advance()
+
+	return exp
+}
+
+func (p *Parser) parsePrefixExpression() ast.Expression {
+	exp := ast.PrefixExpression{
+		Operator: p.current,
+	}
+
+	p.advance()
+	// Hard coded precedence value!
+	exp.Right = p.parseExpression(UNARY)
+
+	return exp
+}
+
 func (p *Parser) parseBinaryExpression(left ast.Expression) ast.Expression {
 	operator := p.current
 
@@ -161,6 +272,52 @@ func (p *Parser) parseBinaryExpression(left ast.Expression) ast.Expression {
 	b.Right = p.parseExpression(operatorPrecedence)
 
 	return b
+}
+func (p *Parser) parseFunctionCallExpression(left ast.Expression) ast.Expression {
+	f := ast.FunctionCallExpression{
+		Caller: left,
+	}
+
+	p.advance()
+
+	f.Arguments = []ast.Expression{}
+
+	for p.current.Type != token.RPAREN {
+		f.Arguments = append(f.Arguments, p.parseExpression(LOWEST))
+
+		if p.current.Type == token.COMMA {
+			p.advance()
+		}
+	}
+
+	p.advance()
+
+	return f
+}
+func (p *Parser) parseIndexExpression(left ast.Expression) ast.Expression {
+	i := ast.IndexExpression{
+		Caller: left,
+	}
+
+	p.advance()
+
+	i.Index = p.parseExpression(LOWEST)
+
+	p.advance()
+
+	return i
+}
+func (p *Parser) parseFieldExpression(left ast.Expression) ast.Expression {
+	f := ast.FieldExpression{
+		Caller: left,
+	}
+
+	p.advance()
+
+	// Hard coded dot precedence
+	f.Field = p.parseExpression(FIELD)
+
+	return f
 }
 func (p *Parser) expect(t *token.Token, tokentype token.TokenType) {
 	if t.Type != tokentype {
