@@ -1,8 +1,6 @@
 package lexer
 
 import (
-	"strings"
-
 	"github.com/pspiagicw/fener/token"
 )
 
@@ -11,15 +9,10 @@ type Lexer struct {
 	curPos  int
 	readPos int
 	length  int
+	current string
 	EOF     bool
 }
 
-func (l *Lexer) current() string {
-	if l.EOF {
-		return ""
-	}
-	return string(l.input[l.curPos])
-}
 func (l *Lexer) peek() string {
 	if l.readPos < l.length {
 		return string(l.input[l.readPos])
@@ -30,22 +23,27 @@ func (l *Lexer) peek() string {
 func (l *Lexer) advance() {
 	if l.readPos == l.length {
 		l.EOF = true
+		l.current = ""
+	} else {
+		l.curPos = l.readPos
+		l.readPos += 1
+		l.current = string(l.input[l.curPos])
 	}
-
-	l.curPos = l.readPos
-	l.readPos += 1
 }
+
 func isWhitespace(input string) bool {
 	if input == " " || input == "\n" || input == "\t" {
 		return true
 	}
 	return false
 }
+
 func (l *Lexer) whitespace() {
-	for !l.EOF && isWhitespace(l.current()) {
+	for !l.EOF && isWhitespace(l.current) {
 		l.advance()
 	}
 }
+
 func newToken(tokentype token.TokenType, value string) *token.Token {
 	return &token.Token{Type: tokentype, Value: value}
 }
@@ -89,7 +87,7 @@ func (l *Lexer) number() string {
 func (l *Lexer) longString() string {
 	l.advance()
 	start := l.curPos
-	for !l.EOF && !(l.current() == "]" && l.peek() == "]") {
+	for !l.EOF && !(l.current == "]" && l.peek() == "]") {
 		l.advance()
 	}
 	end := l.curPos
@@ -99,7 +97,7 @@ func (l *Lexer) longString() string {
 func (l *Lexer) string(endValue string) string {
 	l.advance()
 	start := l.curPos
-	for !l.EOF && l.current() != endValue {
+	for !l.EOF && l.current != endValue {
 		l.advance()
 	}
 	end := l.curPos
@@ -110,11 +108,11 @@ func (l *Lexer) comment() {
 	l.advance() // Skip the 2 dashes
 	multiline := false
 
-	if l.current() == "[" && l.peek() == "[" {
+	if l.current == "[" && l.peek() == "[" {
 		multiline = true
 	}
 
-	for !l.EOF && multiline && !(l.current() == "]" && l.peek() == "]") {
+	for !l.EOF && multiline && !(l.current == "]" && l.peek() == "]") {
 		l.advance()
 	}
 
@@ -122,7 +120,7 @@ func (l *Lexer) comment() {
 		l.advance()
 	}
 
-	for !l.EOF && !multiline && (l.current() != "\n") {
+	for !l.EOF && !multiline && (l.current != "\n") {
 		l.advance()
 	}
 
@@ -135,33 +133,41 @@ func predictNumber(input string) token.TokenType {
 
 }
 func predictType(input string) token.TokenType {
-	switch strings.ToUpper(input) {
-	case token.IF:
+	switch input {
+	case "if":
 		return token.IF
-	case token.ELSE:
+	case "else":
 		return token.ELSE
-	case token.RETURN:
+	case "return":
 		return token.RETURN
-	case token.FN:
+	case "fn":
 		return token.FN
-	case token.END:
+	case "end":
 		return token.END
-	case token.LET:
+	case "let":
 		return token.LET
-	case token.NIL:
+	case "nil":
 		return token.NIL
-	case token.TRUE:
+	case "true":
 		return token.TRUE
-	case token.FALSE:
+	case "false":
 		return token.FALSE
-	case token.NOT:
+	case "not":
 		return token.NOT
-	case token.AND:
+	case "and":
 		return token.AND
-	case token.OR:
+	case "or":
 		return token.OR
-	case token.THEN:
+	case "then":
 		return token.THEN
+	case "int":
+		fallthrough
+	case "float":
+		fallthrough
+	case "string":
+		fallthrough
+	case "bool":
+		return token.TYPE
 	default:
 		return token.IDENTIFIER
 
@@ -176,42 +182,42 @@ func (l *Lexer) Next() *token.Token {
 		return newToken(token.EOF, "")
 	}
 
-	switch l.current() {
+	switch l.current {
 	case "+":
-		return newToken(token.PLUS, l.current())
+		return newToken(token.PLUS, l.current)
 	case "-":
 		if l.peek() == "-" {
 			l.comment()
 			return l.Next()
 		}
-		return newToken(token.MINUS, l.current())
+		return newToken(token.MINUS, l.current)
 	case "%":
-		return newToken(token.MODULUS, l.current())
+		return newToken(token.MODULUS, l.current)
 	case ",":
-		return newToken(token.COMMA, l.current())
+		return newToken(token.COMMA, l.current)
 	case "^":
-		return newToken(token.EXPONENT, l.current())
+		return newToken(token.EXPONENT, l.current)
 	case "*":
-		return newToken(token.MULTIPLY, l.current())
+		return newToken(token.MULTIPLY, l.current)
 	case "/":
-		return newToken(token.SLASH, l.current())
+		return newToken(token.SLASH, l.current)
 	case "(":
-		return newToken(token.LPAREN, l.current())
+		return newToken(token.LPAREN, l.current)
 	case ")":
-		return newToken(token.RPAREN, l.current())
+		return newToken(token.RPAREN, l.current)
 	case "{":
-		return newToken(token.LBRACE, l.current())
+		return newToken(token.LBRACE, l.current)
 	case "}":
-		return newToken(token.RBRACE, l.current())
+		return newToken(token.RBRACE, l.current)
 	case "[":
 		if l.peek() == "[" {
 			l.advance()
 			value := l.longString()
 			return newToken(token.STRING_MULTILINE, value)
 		}
-		return newToken(token.LSQUARE, l.current())
+		return newToken(token.LSQUARE, l.current)
 	case "]":
-		return newToken(token.RSQUARE, l.current())
+		return newToken(token.RSQUARE, l.current)
 	case ".":
 		if l.peek() == "." {
 			l.advance()
@@ -221,48 +227,48 @@ func (l *Lexer) Next() *token.Token {
 			}
 			return newToken(token.CONCAT, "..")
 		}
-		return newToken(token.DOT, l.current())
+		return newToken(token.DOT, l.current)
 	case "=":
 		if l.peek() == "=" {
 			l.advance()
 			return newToken(token.EQ, "==")
 		}
-		return newToken(token.ASSIGN, l.current())
+		return newToken(token.ASSIGN, l.current)
 	case "!":
 		if l.peek() == "=" {
 			l.advance()
 			return newToken(token.NEQ, "!=")
 		}
-		return newToken(token.BANG, l.current())
+		return newToken(token.BANG, l.current)
 	case "<":
 		if l.peek() == "=" {
 			l.advance()
 			return newToken(token.LTE, "<=")
 		}
-		return newToken(token.LT, l.current())
+		return newToken(token.LT, l.current)
 	case ">":
 		if l.peek() == "=" {
 			l.advance()
 			return newToken(token.GTE, ">=")
 		}
-		return newToken(token.GT, l.current())
+		return newToken(token.GT, l.current)
 	case "'":
-		value := l.string(l.current())
+		value := l.string(l.current)
 		return newToken(token.STRING_SINGLE, value)
 	case "\"":
-		value := l.string(l.current())
+		value := l.string(l.current)
 		return newToken(token.STRING_DOUBLE, value)
 	default:
-		if isAlpha(l.current()) {
+		if isAlpha(l.current) {
 			value := l.identifier()
 			tokentype := predictType(value)
 			return newToken(tokentype, value)
-		} else if isDigit(l.current()) {
+		} else if isDigit(l.current) {
 			value := l.number()
 			tokentype := predictNumber(value)
 			return newToken(tokentype, value)
 		}
-		return newToken(token.INVALID, l.current())
+		return newToken(token.INVALID, l.current)
 	}
 }
 

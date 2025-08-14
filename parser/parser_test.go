@@ -9,33 +9,37 @@ import (
 func TestLetStatement(t *testing.T) {
 	input := "let a = 1"
 
-	expected := "let a = 1"
+	testParser(t, input, input)
+}
 
-	testParser(t, input, expected)
+func TestLetStatementWithType(t *testing.T) {
+	input := `let a int = 1`
+
+	testParser(t, input, input)
+}
+
+func TestLetStatementMultipleWithType(t *testing.T) {
+	input := `let a int = 1 let b string = "hello" let c bool = true`
+
+	testParser(t, input, input)
 }
 
 func TestMultipleStatements(t *testing.T) {
 	input := "let a = 1 let b = 2"
 
-	expected := "let a = 1 let b = 2"
-
-	testParser(t, input, expected)
+	testParser(t, input, input)
 }
 
 func TestIfStatement(t *testing.T) {
 	input := `if true then print("true") end`
 
-	expected := `if true then print("true") end`
-
-	testParser(t, input, expected)
+	testParser(t, input, input)
 }
 
 func TestIfElseStatement(t *testing.T) {
 	input := `if true then print("true") else print("false") end`
 
-	expected := `if true then print("true") else print("false") end`
-
-	testParser(t, input, expected)
+	testParser(t, input, input)
 }
 
 func TestReturnStatement(t *testing.T) {
@@ -65,13 +69,18 @@ func TestFunctionStatement(t *testing.T) {
 	testParser(t, input, input)
 }
 
-func TestFunctionStatementComplex(t *testing.T) {
-	input := `fn hello(a, b) then return a + b end`
+func TestFunctionStatementWithArgs(t *testing.T) {
+	input := `fn hello(a int, b int) int then return a + b end`
 
-	expected := `fn hello(a, b) then return (a + b) end`
+	expected := `fn hello(a int, b int) int then return (a + b) end`
 
 	testParser(t, input, expected)
+}
 
+func TestFunctionStatementWithString(t *testing.T) {
+	input := `fn concat(a string, b string) string then return (a + b) end`
+
+	testParser(t, input, input)
 }
 
 func testParser(t *testing.T, input string, expected string) {
@@ -79,6 +88,14 @@ func testParser(t *testing.T, input string, expected string) {
 	p := NewParser(l)
 
 	node := p.ParseAST()
+
+	if len(p.Errors()) != 0 {
+		t.Errorf("The parser had %d errors", len(p.Errors()))
+		for _, error := range p.Errors() {
+			t.Errorf("%q", error)
+		}
+		t.Fatal()
+	}
 
 	result := node.String()
 

@@ -1,49 +1,21 @@
 package parser
 
 import (
-	"log"
+	"fmt"
 
 	"github.com/pspiagicw/fener/ast"
 	"github.com/pspiagicw/fener/lexer"
 	"github.com/pspiagicw/fener/token"
 )
 
-const (
-	_ = iota
-	LOWEST
-	OR
-	AND
-	COMPARISON
-	CONCAT
-	BINARY
-	MULTIPLY
-	EXPONENT
-	UNARY
-	CALL
-	INDEX
-	FIELD
-)
+type ParserError error
 
-var precedence = map[token.TokenType]int{
-	token.PLUS:     BINARY,
-	token.MINUS:    BINARY,
-	token.MULTIPLY: MULTIPLY,
-	token.SLASH:    MULTIPLY,
-	token.MODULUS:  MULTIPLY,
-	token.EXPONENT: EXPONENT,
-	token.CONCAT:   CONCAT,
-	token.NOT:      UNARY,
-	token.AND:      AND,
-	token.OR:       OR,
-	token.EQ:       COMPARISON,
-	token.NEQ:      COMPARISON,
-	token.LPAREN:   CALL,
-	token.LSQUARE:  INDEX,
-	token.DOT:      FIELD,
-	token.GT:       COMPARISON,
-	token.LT:       COMPARISON,
-	token.LTE:      COMPARISON,
-	token.GTE:      COMPARISON,
+type Parser struct {
+	lexer            *lexer.Lexer
+	current          *token.Token
+	prefixParseFnMap map[token.TokenType]prefixParseFn
+	infixParseFnMap  map[token.TokenType]infixParseFn
+	errors           []ParserError
 }
 
 func NewParser(l *lexer.Lexer) *Parser {
@@ -93,21 +65,9 @@ func (p *Parser) registerPrefixFn(tokentype token.TokenType, fn prefixParseFn) {
 func (p *Parser) registerInfixFn(tokentype token.TokenType, fn infixParseFn) {
 	p.infixParseFnMap[tokentype] = fn
 }
-func appendStatement(a *ast.AST, statement ast.Statement) {
-	if statement != nil {
-		a.Statements = append(a.Statements, statement)
-	}
-}
 
 type prefixParseFn func() ast.Expression
 type infixParseFn func(ast.Expression) ast.Expression
-
-type Parser struct {
-	lexer            *lexer.Lexer
-	current          *token.Token
-	prefixParseFnMap map[token.TokenType]prefixParseFn
-	infixParseFnMap  map[token.TokenType]infixParseFn
-}
 
 func (p *Parser) advance() {
 	p.current = p.lexer.Next()
@@ -119,302 +79,20 @@ func (p *Parser) ParseAST() *ast.AST {
 	for !p.lexer.EOF {
 		statement := p.parseStatement()
 
-		appendStatement(a, statement)
+		if statement != nil {
+			a.Statements = append(a.Statements, statement)
+		} else {
+			p.advance()
+		}
 	}
 
 	return a
 }
 
-func (p *Parser) parseStatement() ast.Statement {
-	switch p.current.Type {
-	case token.LET:
-		return p.parseLetStatements()
-	case token.IF:
-		return p.parseIfStatement()
-	case token.RETURN:
-		return p.parseReturnStatement()
-	case token.FN:
-		return p.parseFunctionStatement()
-	default:
-		return p.parseExpressionStatement()
-	}
+func (p *Parser) Errors() []ParserError {
+	return p.errors
 }
-func (p *Parser) parseFunctionStatement() ast.FunctionStatement {
-	p.advance()
-
-	f := ast.FunctionStatement{}
-
-	p.expect(p.current, token.IDENTIFIER)
-	f.Name = p.current
-
-	p.advance()
-
-	p.expect(p.current, token.LPAREN)
-	p.advance()
-
-	f.Args = []*token.Token{}
-
-	for p.current.Type != token.RPAREN {
-		p.expect(p.current, token.IDENTIFIER)
-		f.Args = append(f.Args, p.current)
-		p.advance()
-		if p.current.Type == token.COMMA {
-			p.advance()
-		}
-	}
-
-	p.expect(p.current, token.RPAREN)
-	p.advance()
-
-	p.expect(p.current, token.THEN)
-	p.advance()
-
-	f.Body = p.parseBlockStatement()
-
-	p.expect(p.current, token.END)
-	p.advance()
-
-	return f
-
-}
-func (p *Parser) parseExpressionStatement() ast.ExpressionStatement {
-	e := ast.ExpressionStatement{}
-
-	e.Inside = p.parseExpression(LOWEST)
-
-	return e
-}
-func (p *Parser) parseLetStatements() ast.LetStatement {
-	p.advance()
-
-	let := ast.LetStatement{}
-
-	p.expect(p.current, token.IDENTIFIER)
-
-	let.Name = p.current.Value
-
-	p.advance()
-
-	p.expect(p.current, token.ASSIGN)
-
-	p.advance()
-
-	let.Value = p.parseExpression(LOWEST)
-
-	return let
-}
-func (p *Parser) parseReturnStatement() ast.ReturnStatement {
-
-	p.advance()
-
-	r := ast.ReturnStatement{}
-
-	r.Value = p.parseExpression(LOWEST)
-
-	return r
-}
-func (p *Parser) parseIfStatement() ast.IfStatement {
-	p.advance()
-
-	i := ast.IfStatement{}
-
-	i.Condition = p.parseExpression(LOWEST)
-
-	p.expect(p.current, token.THEN)
-	p.advance()
-
-	i.Consequence = p.parseBlockStatement()
-
-	switch p.current.Type {
-	case token.ELSE:
-		p.advance()
-		i.Alternative = p.parseBlockStatement()
-	}
-
-	p.expect(p.current, token.END)
-
-	p.advance()
-
-	return i
-}
-func (p *Parser) parseBlockStatement() *ast.BlockStatement {
-	b := &ast.BlockStatement{}
-
-	b.Statements = []ast.Statement{}
-	for p.current.Type != token.EOF && p.current.Type != token.END && p.current.Type != token.ELSE {
-		b.Statements = append(b.Statements, p.parseStatement())
-	}
-
-	return b
-}
-func (p *Parser) parseExpression(precedence int) ast.Expression {
-	prefixFn := p.prefixParseFnMap[p.current.Type]
-
-	if prefixFn == nil {
-		log.Fatalf("Can't find prefix fn for type '%s'", p.current.Type)
-	}
-
-	// Should have a advance function automatically in it.
-	left := prefixFn()
-
-	for p.current.Type != token.EOF && precedence < p.currentPrecedence() {
-
-		infixFn := p.infixParseFnMap[p.current.Type]
-
-		if infixFn == nil {
-			return left
-		}
-
-		left = infixFn(left)
-
-		if left == nil {
-			return nil
-		}
-
-	}
-
-	return left
-}
-func (p *Parser) currentPrecedence() int {
-	val, ok := precedence[p.current.Type]
-
-	if ok {
-		return val
-	}
-
-	return LOWEST
-}
-func (p *Parser) parseNumberExpression() ast.Expression {
-	n := ast.NumberExpression{
-		Value: p.current.Value,
-	}
-
-	p.advance()
-	return n
-}
-func (p *Parser) parseStringExpression() ast.Expression {
-	s := ast.StringExpression{
-		Value: p.current.Value,
-	}
-
-	switch p.current.Type {
-	case token.STRING_DOUBLE:
-		s.Type = ast.DOUBLE_QUOTED
-	case token.STRING_SINGLE:
-		s.Type = ast.SINGLE_QUOTED
-	default:
-		s.Type = ast.MULTILINE
-	}
-
-	p.advance()
-	return s
-}
-
-func (p *Parser) parseIdentifierExpression() ast.Expression {
-	i := ast.IdentifierExpression{
-		Value: p.current,
-	}
-
-	p.advance()
-	return i
-}
-func (p *Parser) parseBooleanExpression() ast.Expression {
-	b := ast.BooleanExpression{
-		Value: p.current,
-	}
-	p.advance()
-
-	return b
-}
-func (p *Parser) parseParenthesisExpression() ast.Expression {
-	exp := ast.ParenthesisExpression{}
-
-	p.advance()
-
-	exp.Inside = p.parseExpression(LOWEST)
-
-	// Skip over the ending round brackets.
-	p.advance()
-
-	return exp
-}
-
-func (p *Parser) parsePrefixExpression() ast.Expression {
-	exp := ast.PrefixExpression{
-		Operator: p.current,
-	}
-
-	p.advance()
-	// Hard coded precedence value!
-	exp.Right = p.parseExpression(UNARY)
-
-	return exp
-}
-
-func (p *Parser) parseBinaryExpression(left ast.Expression) ast.Expression {
-	operator := p.current
-
-	b := ast.BinaryExpression{
-		Left:     left,
-		Operator: operator,
-	}
-
-	operatorPrecedence := p.currentPrecedence()
-
-	p.advance()
-
-	b.Right = p.parseExpression(operatorPrecedence)
-
-	return b
-}
-func (p *Parser) parseFunctionCallExpression(left ast.Expression) ast.Expression {
-	f := ast.FunctionCallExpression{
-		Caller: left,
-	}
-
-	p.advance()
-
-	f.Arguments = []ast.Expression{}
-
-	for p.current.Type != token.RPAREN {
-		f.Arguments = append(f.Arguments, p.parseExpression(LOWEST))
-
-		if p.current.Type == token.COMMA {
-			p.advance()
-		}
-	}
-
-	p.advance()
-
-	return f
-}
-func (p *Parser) parseIndexExpression(left ast.Expression) ast.Expression {
-	i := ast.IndexExpression{
-		Caller: left,
-	}
-
-	p.advance()
-
-	i.Index = p.parseExpression(LOWEST)
-
-	p.advance()
-
-	return i
-}
-func (p *Parser) parseFieldExpression(left ast.Expression) ast.Expression {
-	f := ast.FieldExpression{
-		Caller: left,
-	}
-
-	p.advance()
-
-	// Hard coded dot precedence
-	f.Field = p.parseExpression(FIELD)
-
-	return f
-}
-func (p *Parser) expect(t *token.Token, tokentype token.TokenType) {
-	if t.Type != tokentype {
-		log.Fatalf("Expected '%s', got '%s'", tokentype, t.Type)
-	}
+func (p *Parser) registerError(format string, args ...any) {
+	err := fmt.Errorf(format, args...)
+	p.errors = append(p.errors, err)
 }

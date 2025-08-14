@@ -48,13 +48,20 @@ func (a AST) String() string {
 }
 
 type LetStatement struct {
-	Name  string
+	Name  *token.Token
 	Value Expression
+	Type  *token.Token
 }
 
 func (l LetStatement) statementNode() {}
 func (l LetStatement) String() string {
-	elements := []string{"let", l.Name, "=", l.Value.String()}
+	elements := []string{}
+
+	if l.Type == nil {
+		elements = []string{"let", l.Name.Value, "=", l.Value.String()}
+	} else {
+		elements = []string{"let", l.Name.Value, l.Type.Value, "=", l.Value.String()}
+	}
 
 	return strings.Join(elements, " ")
 }
@@ -247,21 +254,31 @@ func (r ReturnStatement) String() string {
 }
 
 type FunctionStatement struct {
-	Name *token.Token
-	Args []*token.Token
-	Body *BlockStatement
+	Name       *token.Token
+	Args       []*token.Token
+	Type       []*token.Token
+	Body       *BlockStatement
+	ReturnType *token.Token
 }
 
 func (f FunctionStatement) statementNode() {}
 func (f FunctionStatement) String() string {
 	args := []string{}
-	for _, arg := range f.Args {
-		args = append(args, arg.Value)
+
+	for i, arg := range f.Args {
+		name := arg.Value + " " + f.Type[i].Value
+		args = append(args, name)
 	}
 
 	headerString := f.Name.Value + "(" + strings.Join(args, ", ") + ")"
 
-	elements := []string{"fn", headerString, "then", f.Body.String(), "end"}
+	elements := []string{}
+
+	if f.ReturnType == nil {
+		elements = []string{"fn", headerString, "then", f.Body.String(), "end"}
+	} else {
+		elements = []string{"fn", headerString, f.ReturnType.Value, "then", f.Body.String(), "end"}
+	}
 
 	return strings.Join(elements, " ")
 }

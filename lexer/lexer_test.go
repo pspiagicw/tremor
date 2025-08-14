@@ -172,6 +172,19 @@ func TestMultilineCommentBetweenCode(t *testing.T) {
 	testToken(t, input, expected)
 }
 
+func TestTypes(t *testing.T) {
+	input := `int float string bool`
+
+	expected := []token.Token{
+		{Type: token.TYPE, Value: "int"},
+		{Type: token.TYPE, Value: "float"},
+		{Type: token.TYPE, Value: "string"},
+		{Type: token.TYPE, Value: "bool"},
+	}
+
+	testToken(t, input, expected)
+}
+
 func testToken(t *testing.T, input string, expectedTokens []token.Token) {
 	lexer := NewLexer(input)
 
