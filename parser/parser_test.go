@@ -89,13 +89,7 @@ func testParser(t *testing.T, input string, expected string) {
 
 	node := p.ParseAST()
 
-	if len(p.Errors()) != 0 {
-		t.Errorf("The parser had %d errors", len(p.Errors()))
-		for _, error := range p.Errors() {
-			t.Errorf("%q", error)
-		}
-		t.Fatal()
-	}
+	printParserErrors(t, p)
 
 	result := node.String()
 
@@ -106,5 +100,14 @@ func testParser(t *testing.T, input string, expected string) {
 	if expected != result {
 		t.Fatalf("Expected '%q', got '%q' ", expected, result)
 	}
+}
 
+func printParserErrors(t *testing.T, p *Parser) {
+	if len(p.Errors()) != 0 {
+		t.Errorf("The parser had %d errors", len(p.Errors()))
+		for _, error := range p.Errors() {
+			t.Errorf("%q", error)
+		}
+		t.Fatal()
+	}
 }

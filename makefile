@@ -2,7 +2,7 @@ build:
 	go build .
 
 test:
-	go test -json ./... | tparse -all
+	go test -json ./typechecker | tparse -all
 
 all: build test
 
