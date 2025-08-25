@@ -50,7 +50,7 @@ func TestLetStatementInt(t *testing.T) {
 
 func TestFunctionStatement(t *testing.T) {
 
-	input := `fn hello() then print("Hello, World") end`
+	input := `fn hello() void then print("Hello, World") end`
 
 	expected := types.NewFunctionType([]*types.Type{}, types.VoidType)
 
@@ -69,6 +69,25 @@ func TestFunctionStatementWithArgTypes(t *testing.T) {
 	input := `fn add(a int, b int) int then return a + b end`
 
 	expected := types.NewFunctionType([]*types.Type{types.IntType, types.IntType}, types.IntType)
+
+	testTypeChecking(t, input, expected)
+}
+
+func TestFunctionStatementWithFunctionArgTypes(t *testing.T) {
+	input := `fn apply(val int, somefunc fn(int) int) int then return somefunc(val) end`
+
+	expected := types.NewFunctionType(
+		[]*types.Type{
+			types.IntType,
+			types.NewFunctionType(
+				[]*types.Type{
+					types.IntType,
+				},
+				types.IntType,
+			),
+		},
+		types.IntType,
+	)
 
 	testTypeChecking(t, input, expected)
 }

@@ -173,13 +173,14 @@ func TestMultilineCommentBetweenCode(t *testing.T) {
 }
 
 func TestTypes(t *testing.T) {
-	input := `int float string bool`
+	input := `int float string bool void`
 
 	expected := []token.Token{
 		{Type: token.TYPE, Value: "int"},
 		{Type: token.TYPE, Value: "float"},
 		{Type: token.TYPE, Value: "string"},
 		{Type: token.TYPE, Value: "bool"},
+		{Type: token.TYPE, Value: "void"},
 	}
 
 	testToken(t, input, expected)

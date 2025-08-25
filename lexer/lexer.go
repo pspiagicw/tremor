@@ -162,6 +162,8 @@ func predictType(input string) token.TokenType {
 		return token.THEN
 	case "int":
 		fallthrough
+	case "void":
+		fallthrough
 	case "float":
 		fallthrough
 	case "string":

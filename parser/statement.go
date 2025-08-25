@@ -3,6 +3,7 @@ package parser
 import (
 	"github.com/pspiagicw/tremor/ast"
 	"github.com/pspiagicw/tremor/token"
+	"github.com/pspiagicw/tremor/types"
 )
 
 func (p *Parser) parseStatement() ast.Statement {
@@ -34,13 +35,13 @@ func (p *Parser) parseFunctionStatement() ast.FunctionStatement {
 	p.expect(token.LPAREN)
 
 	f.Args = []*token.Token{}
-	f.Type = []*token.Token{}
+	f.Type = []*types.Type{}
 
 	for p.current.Type != token.RPAREN {
 		arg := p.expect(token.IDENTIFIER)
 		f.Args = append(f.Args, arg)
 
-		argtype := p.expect(token.TYPE)
+		argtype := p.parseTypeDec()
 		f.Type = append(f.Type, argtype)
 
 		if p.current.Type == token.RPAREN {
@@ -54,7 +55,7 @@ func (p *Parser) parseFunctionStatement() ast.FunctionStatement {
 
 	p.expect(token.RPAREN)
 
-	f.ReturnType = p.ifexpect(token.TYPE)
+	f.ReturnType = p.parseTypeDec()
 
 	p.expect(token.THEN)
 
@@ -64,6 +65,62 @@ func (p *Parser) parseFunctionStatement() ast.FunctionStatement {
 
 	return f
 
+}
+func (p *Parser) parseTypeDec() *types.Type {
+	switch p.current.Type {
+	case token.TYPE:
+		switch p.current.Value {
+		case "int":
+			p.advance()
+			return types.IntType
+		case "string":
+			p.advance()
+			return types.StringType
+		case "bool":
+			p.advance()
+			return types.BoolType
+		case "float":
+			p.advance()
+			return types.FloatType
+		case "void":
+			p.advance()
+			return types.VoidType
+		default:
+			p.advance()
+			return types.UnknownType
+		}
+	case token.FN:
+		return p.parseFunctionTypeDec()
+	default:
+		p.registerError("Can't parse type, got %s", p.current.Type)
+		return types.UnknownType
+	}
+}
+func (p *Parser) parseFunctionTypeDec() *types.Type {
+	p.advance()
+
+	p.expect(token.LPAREN)
+
+	ft := &types.Type{Kind: types.FUNCTION}
+	ft.Args = []*types.Type{}
+
+	for p.current.Type != token.RPAREN {
+		ft.Args = append(ft.Args, p.parseTypeDec())
+
+		if p.current.Type == token.RPAREN {
+			break
+		} else if p.current.Type == token.COMMA {
+			p.advance()
+		} else {
+			p.registerError(FAILED_FUNCTION_MESSAGE, p.current.Type)
+		}
+	}
+
+	p.expect(token.RPAREN)
+
+	ft.ReturnType = p.parseTypeDec()
+
+	return ft
 }
 func (p *Parser) parseExpressionStatement() ast.ExpressionStatement {
 	e := ast.ExpressionStatement{}
@@ -126,7 +183,12 @@ func (p *Parser) parseBlockStatement() *ast.BlockStatement {
 	for p.current.Type != token.EOF &&
 		p.current.Type != token.END &&
 		p.current.Type != token.ELSE {
-		b.Statements = append(b.Statements, p.parseStatement())
+		s := p.parseStatement()
+		if s == nil {
+			p.registerError("Can't parse block statement")
+			return nil
+		}
+		b.Statements = append(b.Statements, s)
 	}
 
 	return b

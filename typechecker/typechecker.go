@@ -57,17 +57,16 @@ func (t *TypeChecker) typeFunctionStatement(node ast.FunctionStatement) *types.T
 	functiontype := &types.Type{Kind: types.FUNCTION}
 
 	if node.ReturnType != nil {
-		functiontype.ReturnType = getType(node.ReturnType.Value)
+		functiontype.ReturnType = node.ReturnType
 	} else {
 		functiontype.ReturnType = types.VoidType
 	}
 	// TODO: Check for return statement and see if it matches the returntype mentioned in function header.
-	// TODO: Support for returning and taking function as argument types.
 
 	functiontype.Args = []*types.Type{}
 
 	for _, arg := range node.Type {
-		argtype := getType(arg.Value)
+		argtype := arg
 		functiontype.Args = append(functiontype.Args, argtype)
 	}
 

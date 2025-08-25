@@ -64,7 +64,7 @@ func TestExpressionStatementComplex(t *testing.T) {
 	testParser(t, input, expected)
 }
 func TestFunctionStatement(t *testing.T) {
-	input := `fn hello() then print("Hello, World") end`
+	input := `fn hello() void then print("Hello, World") end`
 
 	testParser(t, input, input)
 }
@@ -77,8 +77,20 @@ func TestFunctionStatementWithArgs(t *testing.T) {
 	testParser(t, input, expected)
 }
 
-func TestFunctionStatementWithString(t *testing.T) {
+func TestFunctionStatementWithReturnType(t *testing.T) {
 	input := `fn concat(a string, b string) string then return (a + b) end`
+
+	testParser(t, input, input)
+}
+
+func TestFunctionStatementWithFunctionArgType(t *testing.T) {
+	input := `fn apply(x int, somefunc fn(int) int) int then return somefunc(x) end`
+
+	testParser(t, input, input)
+}
+
+func TestFunctionStatementWithFunctionReturnType(t *testing.T) {
+	input := `fn adder(x int, y int) fn(int) int then return "something" end`
 
 	testParser(t, input, input)
 }

@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/pspiagicw/tremor/token"
+	"github.com/pspiagicw/tremor/types"
 )
 
 type StringType int
@@ -256,9 +257,9 @@ func (r ReturnStatement) String() string {
 type FunctionStatement struct {
 	Name       *token.Token
 	Args       []*token.Token
-	Type       []*token.Token
+	Type       []*types.Type
 	Body       *BlockStatement
-	ReturnType *token.Token
+	ReturnType *types.Type
 }
 
 func (f FunctionStatement) statementNode() {}
@@ -266,7 +267,7 @@ func (f FunctionStatement) String() string {
 	args := []string{}
 
 	for i, arg := range f.Args {
-		name := arg.Value + " " + f.Type[i].Value
+		name := arg.Value + " " + f.Type[i].String()
 		args = append(args, name)
 	}
 
@@ -277,7 +278,7 @@ func (f FunctionStatement) String() string {
 	if f.ReturnType == nil {
 		elements = []string{"fn", headerString, "then", f.Body.String(), "end"}
 	} else {
-		elements = []string{"fn", headerString, f.ReturnType.Value, "then", f.Body.String(), "end"}
+		elements = []string{"fn", headerString, f.ReturnType.String(), "then", f.Body.String(), "end"}
 	}
 
 	return strings.Join(elements, " ")
