@@ -4,7 +4,7 @@ type TypeKind string
 
 type Type struct {
 	Kind       TypeKind
-	Args       []Type
+	Args       []*Type
 	ReturnType *Type
 }
 
@@ -29,7 +29,7 @@ const (
 	UNKNOWN TypeKind = "unknown"
 )
 
-func NewFunctionType(args []Type, ReturnType *Type) *Type {
+func NewFunctionType(args []*Type, ReturnType *Type) *Type {
 	t := &Type{
 		Kind:       FUNCTION,
 		Args:       args,

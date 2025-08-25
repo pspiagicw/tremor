@@ -52,7 +52,23 @@ func TestFunctionStatement(t *testing.T) {
 
 	input := `fn hello() then print("Hello, World") end`
 
-	expected := types.NewFunctionType([]types.Type{}, types.VoidType)
+	expected := types.NewFunctionType([]*types.Type{}, types.VoidType)
+
+	testTypeChecking(t, input, expected)
+}
+
+func TestFunctionStatementWithReturnType(t *testing.T) {
+	input := `fn hello() string then return "hello" end`
+
+	expected := types.NewFunctionType([]*types.Type{}, types.StringType)
+
+	testTypeChecking(t, input, expected)
+}
+
+func TestFunctionStatementWithArgTypes(t *testing.T) {
+	input := `fn add(a int, b int) int then return a + b end`
+
+	expected := types.NewFunctionType([]*types.Type{types.IntType, types.IntType}, types.IntType)
 
 	testTypeChecking(t, input, expected)
 }
@@ -93,8 +109,19 @@ func testTypeChecking(t *testing.T, input string, expected *types.Type) {
 
 	printTypeCheckerErrors(t, typechecker)
 
-	if got != expected {
+	if got.Kind != expected.Kind {
 		t.Fatalf("Expected type of %s, got type of %s", expected.Kind, got.Kind)
+	}
+
+	if got.Kind == types.FUNCTION {
+		if got.ReturnType != expected.ReturnType {
+			t.Fatalf("Expected return type of %s, got type of %s for function statement", expected.ReturnType.Kind, got.ReturnType.Kind)
+		}
+		for i := range expected.Args {
+			if got.Args[i].Kind != expected.Args[i].Kind {
+				t.Fatalf("Expected arg type of %s, got arg type of %s.", expected.Args[i].Kind, got.Args[i].Kind)
+			}
+		}
 	}
 }
 func printTypeCheckerErrors(t *testing.T, typechecker *TypeChecker) {

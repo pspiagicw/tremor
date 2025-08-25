@@ -45,24 +45,34 @@ func (t *TypeChecker) TypeCheck(node ast.Node) *types.Type {
 		return t.typeIfStatement(node)
 	case ast.IdentifierExpression:
 		return t.typeIdentifierExpression(node)
-	// case ast.FunctionStatement:
-	// 	return t.typeFunctionStatement(node)
+	case ast.FunctionStatement:
+		return t.typeFunctionStatement(node)
 	default:
 		t.registerError("Can't check type of '%T'", node)
 		return types.UnknownType
 	}
 }
 
-// func (t *TypeChecker) typeFunctionStatement(node ast.FunctionStatement) *types.Type {
-// 	functiontype := types.Type{Kind: types.FUNCTION}
-//
-// 	functiontype.ReturnType = getType(node.ReturnType.Value)
-//
-// 	functiontype.Args = []types.Type{}
-//
-// 	for _, arg := range node.Type {
-// 	}
-// }
+func (t *TypeChecker) typeFunctionStatement(node ast.FunctionStatement) *types.Type {
+	functiontype := &types.Type{Kind: types.FUNCTION}
+
+	if node.ReturnType != nil {
+		functiontype.ReturnType = getType(node.ReturnType.Value)
+	} else {
+		functiontype.ReturnType = types.VoidType
+	}
+	// TODO: Check for return statement and see if it matches the returntype mentioned in function header.
+	// TODO: Support for returning and taking function as argument types.
+
+	functiontype.Args = []*types.Type{}
+
+	for _, arg := range node.Type {
+		argtype := getType(arg.Value)
+		functiontype.Args = append(functiontype.Args, argtype)
+	}
+
+	return functiontype
+}
 
 func (t *TypeChecker) typeIdentifierExpression(node ast.IdentifierExpression) *types.Type {
 	atype := t.gettype(node.Value.Value)
