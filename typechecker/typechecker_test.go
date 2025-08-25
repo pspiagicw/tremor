@@ -11,7 +11,7 @@ import (
 func TestIntType(t *testing.T) {
 	input := `1`
 
-	expected := types.INT
+	expected := types.IntType
 
 	testTypeChecking(t, input, expected)
 }
@@ -19,7 +19,7 @@ func TestIntType(t *testing.T) {
 func TestStringType(t *testing.T) {
 	input := `"hello"`
 
-	expected := types.STRING
+	expected := types.StringType
 
 	testTypeChecking(t, input, expected)
 }
@@ -27,15 +27,15 @@ func TestStringType(t *testing.T) {
 func TestBooleanType(t *testing.T) {
 	input := `true`
 
-	expected := types.BOOL
+	expected := types.BoolType
 
 	testTypeChecking(t, input, expected)
 }
 
 func TestLetStatementBool(t *testing.T) {
-	input := `let a = true`
+	input := `let a bool = true`
 
-	expected := types.BOOL
+	expected := types.BoolType
 
 	testTypeChecking(t, input, expected)
 }
@@ -43,7 +43,16 @@ func TestLetStatementBool(t *testing.T) {
 func TestLetStatementInt(t *testing.T) {
 	input := `let a = 1`
 
-	expected := types.INT
+	expected := types.IntType
+
+	testTypeChecking(t, input, expected)
+}
+
+func TestFunctionStatement(t *testing.T) {
+
+	input := `fn hello() then print("Hello, World") end`
+
+	expected := types.NewFunctionType([]types.Type{}, types.VoidType)
 
 	testTypeChecking(t, input, expected)
 }
@@ -51,26 +60,26 @@ func TestLetStatementInt(t *testing.T) {
 func TestLetStatementString(t *testing.T) {
 	input := `let b = "name"`
 
-	expected := types.STRING
+	expected := types.StringType
 
 	testTypeChecking(t, input, expected)
 }
 func TestReturnStatement(t *testing.T) {
 	input := `return 1`
 
-	expected := types.INT
+	expected := types.IntType
 
 	testTypeChecking(t, input, expected)
 }
 func TestIfStatement(t *testing.T) {
 	input := `let a = true if a then end`
 
-	expected := types.BOOL
+	expected := types.BoolType
 
 	testTypeChecking(t, input, expected)
 }
 
-func testTypeChecking(t *testing.T, input string, expected types.Type) {
+func testTypeChecking(t *testing.T, input string, expected *types.Type) {
 
 	l := lexer.NewLexer(input)
 	p := parser.NewParser(l)
@@ -85,7 +94,7 @@ func testTypeChecking(t *testing.T, input string, expected types.Type) {
 	printTypeCheckerErrors(t, typechecker)
 
 	if got != expected {
-		t.Fatalf("Expected type of %s, got type of %s", expected, got)
+		t.Fatalf("Expected type of %s, got type of %s", expected.Kind, got.Kind)
 	}
 }
 func printTypeCheckerErrors(t *testing.T, typechecker *TypeChecker) {

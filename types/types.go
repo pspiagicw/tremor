@@ -1,14 +1,40 @@
 package types
 
-type Type string
+type TypeKind string
+
+type Type struct {
+	Kind       TypeKind
+	Args       []Type
+	ReturnType *Type
+}
+
+var (
+	IntType    = &Type{Kind: INT}
+	StringType = &Type{Kind: STRING}
+	BoolType   = &Type{Kind: BOOL}
+	VoidType   = &Type{Kind: VOID}
+
+	UnknownType = &Type{Kind: UNKNOWN}
+)
 
 const (
-	INT    Type = "int"
-	FLOAT  Type = "float"
-	STRING Type = "string"
-	BOOL   Type = "bool"
+	INT      TypeKind = "int"
+	FLOAT    TypeKind = "float"
+	STRING   TypeKind = "string"
+	BOOL     TypeKind = "bool"
+	FUNCTION TypeKind = "function"
 
-	VOID Type = "void"
+	VOID TypeKind = "void"
 
-	UNKNOWN Type = "unknown"
+	UNKNOWN TypeKind = "unknown"
 )
+
+func NewFunctionType(args []Type, ReturnType *Type) *Type {
+	t := &Type{
+		Kind:       FUNCTION,
+		Args:       args,
+		ReturnType: ReturnType,
+	}
+
+	return t
+}
