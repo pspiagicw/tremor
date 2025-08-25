@@ -1,6 +1,6 @@
 package parser
 
-import "github.com/pspiagicw/fener/token"
+import "github.com/pspiagicw/tremor/token"
 
 const (
 	_ = iota

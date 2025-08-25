@@ -3,9 +3,9 @@ package parser
 import (
 	"fmt"
 
-	"github.com/pspiagicw/fener/ast"
-	"github.com/pspiagicw/fener/lexer"
-	"github.com/pspiagicw/fener/token"
+	"github.com/pspiagicw/tremor/ast"
+	"github.com/pspiagicw/tremor/lexer"
+	"github.com/pspiagicw/tremor/token"
 )
 
 type ParserError error

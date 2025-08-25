@@ -3,9 +3,9 @@ package parser
 import (
 	"testing"
 
-	"github.com/pspiagicw/fener/lexer"
-	"github.com/pspiagicw/fener/parser"
-	"github.com/pspiagicw/fener/types"
+	"github.com/pspiagicw/tremor/lexer"
+	"github.com/pspiagicw/tremor/parser"
+	"github.com/pspiagicw/tremor/types"
 )
 
 func TestIntType(t *testing.T) {

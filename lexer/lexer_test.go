@@ -1,7 +1,7 @@
 package lexer
 
 import "testing"
-import "github.com/pspiagicw/fener/token"
+import "github.com/pspiagicw/tremor/token"
 
 func TestSimple(t *testing.T) {
 }

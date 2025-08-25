@@ -3,8 +3,8 @@ package parser
 import (
 	"fmt"
 
-	"github.com/pspiagicw/fener/ast"
-	"github.com/pspiagicw/fener/types"
+	"github.com/pspiagicw/tremor/ast"
+	"github.com/pspiagicw/tremor/types"
 )
 
 type TypeError error

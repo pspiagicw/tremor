@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/pspiagicw/fener/lexer"
-	"github.com/pspiagicw/fener/token"
+	"github.com/pspiagicw/tremor/lexer"
+	"github.com/pspiagicw/tremor/token"
 )
 
 func TestLetStatementError(t *testing.T) {

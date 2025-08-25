@@ -1,3 +1,3 @@
-module github.com/pspiagicw/fener
+module github.com/pspiagicw/tremor
 
 go 1.24.6

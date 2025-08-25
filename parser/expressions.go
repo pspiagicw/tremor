@@ -1,8 +1,8 @@
 package parser
 
 import (
-	"github.com/pspiagicw/fener/ast"
-	"github.com/pspiagicw/fener/token"
+	"github.com/pspiagicw/tremor/ast"
+	"github.com/pspiagicw/tremor/token"
 )
 
 func (p *Parser) parseExpression(precedence int) ast.Expression {

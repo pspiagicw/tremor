@@ -3,7 +3,7 @@ package parser
 import (
 	"testing"
 
-	"github.com/pspiagicw/fener/lexer"
+	"github.com/pspiagicw/tremor/lexer"
 )
 
 func TestLetStatement(t *testing.T) {

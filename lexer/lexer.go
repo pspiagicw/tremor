@@ -1,7 +1,7 @@
 package lexer
 
 import (
-	"github.com/pspiagicw/fener/token"
+	"github.com/pspiagicw/tremor/token"
 )
 
 type Lexer struct {

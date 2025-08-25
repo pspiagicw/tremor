@@ -3,7 +3,7 @@ package ast
 import (
 	"strings"
 
-	"github.com/pspiagicw/fener/token"
+	"github.com/pspiagicw/tremor/token"
 )
 
 type StringType int
