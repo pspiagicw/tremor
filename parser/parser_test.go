@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/pspiagicw/tremor/lexer"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestLetStatement(t *testing.T) {
@@ -105,13 +106,7 @@ func testParser(t *testing.T, input string, expected string) {
 
 	result := node.String()
 
-	if len(expected) != len(result) {
-		t.Errorf("The length doesn't match, expected: %d, got: %d", len(expected), len(result))
-	}
-
-	if expected != result {
-		t.Fatalf("Expected '%q', got '%q' ", expected, result)
-	}
+	assert.Equal(t, expected, result, "AST doesn't match.")
 }
 
 func printParserErrors(t *testing.T, p *Parser) {

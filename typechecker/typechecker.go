@@ -47,10 +47,34 @@ func (t *TypeChecker) TypeCheck(node ast.Node) *types.Type {
 		return t.typeIdentifierExpression(node)
 	case ast.FunctionStatement:
 		return t.typeFunctionStatement(node)
+	case ast.FunctionCallExpression:
+		return t.typeFunctionCall(node)
 	default:
 		t.registerError("Can't check type of '%T'", node)
 		return types.UnknownType
 	}
+}
+func (t *TypeChecker) typeFunctionCall(node ast.FunctionCallExpression) *types.Type {
+	ftype := t.gettype(node.Caller.String())
+
+	if ftype == types.UnknownType {
+		t.registerError("Function '%s', not declared in this scope.", node.Caller.String())
+	} else if ftype.Kind != types.FUNCTION {
+		t.registerError("%s is not a function!", node.Caller.String())
+	}
+
+	if len(ftype.Args) != len(node.Arguments) {
+		t.registerError("Function needs %d arguments, got %d", len(ftype.Args), len(node.Arguments))
+	}
+
+	for i, argtype := range ftype.Args {
+		actualtype := t.TypeCheck(node.Arguments[i])
+		if actualtype != argtype {
+			t.registerError("[%d] Function needs argument of type %s, got %s", i, argtype, actualtype)
+		}
+	}
+
+	return ftype.ReturnType
 }
 
 func (t *TypeChecker) typeFunctionStatement(node ast.FunctionStatement) *types.Type {
@@ -61,7 +85,14 @@ func (t *TypeChecker) typeFunctionStatement(node ast.FunctionStatement) *types.T
 	} else {
 		functiontype.ReturnType = types.VoidType
 	}
-	// TODO: Check for return statement and see if it matches the returntype mentioned in function header.
+
+	bodyType := t.TypeCheck(node.Body)
+
+	if bodyType != functiontype.ReturnType {
+		t.registerError("Expected return type of %s, got %s", functiontype.ReturnType, bodyType)
+		return bodyType
+	}
+	// TODO: Check for return statement and see if it matches the returntype mentioned in function header. (completed)
 
 	functiontype.Args = []*types.Type{}
 
@@ -70,7 +101,7 @@ func (t *TypeChecker) typeFunctionStatement(node ast.FunctionStatement) *types.T
 		functiontype.Args = append(functiontype.Args, argtype)
 	}
 
-	return functiontype
+	return t.settype(node.Name.Value, functiontype)
 }
 
 func (t *TypeChecker) typeIdentifierExpression(node ast.IdentifierExpression) *types.Type {
@@ -112,7 +143,10 @@ func (t *TypeChecker) typeIfStatement(node ast.IfStatement) *types.Type {
 func (t *TypeChecker) typeReturnStatement(node ast.ReturnStatement) *types.Type {
 	valuetype := t.TypeCheck(node.Value)
 
-	return valuetype
+	rt := &types.Type{Kind: types.RETURN}
+	rt.ReturnType = valuetype
+
+	return rt
 }
 func (t *TypeChecker) typeLetStatement(node ast.LetStatement) *types.Type {
 	valuetype := t.TypeCheck(node.Value)
@@ -140,14 +174,15 @@ func (t *TypeChecker) typeAST(node *ast.AST) *types.Type {
 }
 
 func (t *TypeChecker) typeBlockStatement(node *ast.BlockStatement) *types.Type {
-	tp := types.VoidType
 	for _, statement := range node.Statements {
-		tp = t.TypeCheck(statement)
-		if tp == types.UnknownType {
-			return tp
+		bodytype := t.TypeCheck(statement)
+		if bodytype.Kind == types.RETURN {
+			return bodytype.ReturnType
+		} else if bodytype == types.UnknownType {
+			return bodytype
 		}
 	}
-	return tp
+	return types.VoidType
 }
 func (t *TypeChecker) registerError(format string, args ...any) {
 	t.errors = append(t.errors, fmt.Errorf(format, args...))

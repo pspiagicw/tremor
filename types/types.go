@@ -30,6 +30,7 @@ const (
 	VOID TypeKind = "void"
 
 	UNKNOWN TypeKind = "unknown"
+	RETURN  TypeKind = "return"
 )
 
 func NewFunctionType(args []*Type, ReturnType *Type) *Type {
@@ -43,7 +44,7 @@ func NewFunctionType(args []*Type, ReturnType *Type) *Type {
 }
 
 func (t *Type) String() string {
-	if t.Kind == INT || t.Kind == STRING || t.Kind == FLOAT || t.Kind == VOID {
+	if t.Kind == INT || t.Kind == STRING || t.Kind == FLOAT || t.Kind == VOID || t.Kind == UNKNOWN {
 		return string(t.Kind)
 	}
 

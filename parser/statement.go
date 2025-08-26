@@ -91,10 +91,21 @@ func (p *Parser) parseTypeDec() *types.Type {
 		}
 	case token.FN:
 		return p.parseFunctionTypeDec()
+	case token.LPAREN:
+		return p.parseNestedTypeDec()
 	default:
 		p.registerError("Can't parse type, got %s", p.current.Type)
 		return types.UnknownType
 	}
+}
+func (p *Parser) parseNestedTypeDec() *types.Type {
+	p.advance() // Advance over the LPAREN
+
+	tp := p.parseTypeDec()
+
+	p.expect(token.RPAREN)
+
+	return tp
 }
 func (p *Parser) parseFunctionTypeDec() *types.Type {
 	p.advance()

@@ -6,6 +6,7 @@ import (
 	"github.com/pspiagicw/tremor/lexer"
 	"github.com/pspiagicw/tremor/parser"
 	"github.com/pspiagicw/tremor/types"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIntType(t *testing.T) {
@@ -91,6 +92,22 @@ func TestFunctionStatementWithFunctionArgTypes(t *testing.T) {
 
 	testTypeChecking(t, input, expected)
 }
+func TestFunctionStatementWithFunctionReturnTypes(t *testing.T) {
+	input := `fn adder(x int, y int) (fn(int) int) then return "something" end`
+
+	expected := types.NewFunctionType(
+		[]*types.Type{
+			types.IntType,
+			types.IntType,
+		},
+		types.NewFunctionType(
+			[]*types.Type{types.IntType},
+			types.IntType,
+		),
+	)
+
+	testTypeChecking(t, input, expected)
+}
 
 func TestLetStatementString(t *testing.T) {
 	input := `let b = "name"`
@@ -102,7 +119,7 @@ func TestLetStatementString(t *testing.T) {
 func TestReturnStatement(t *testing.T) {
 	input := `return 1`
 
-	expected := types.IntType
+	expected := &types.Type{Kind: types.RETURN}
 
 	testTypeChecking(t, input, expected)
 }
@@ -128,41 +145,23 @@ func testTypeChecking(t *testing.T, input string, expected *types.Type) {
 
 	printTypeCheckerErrors(t, typechecker)
 
-	if got.Kind != expected.Kind {
-		t.Fatalf("Expected type of %s, got type of %s", expected.Kind, got.Kind)
-	}
+	assert.Equal(t, got.Kind, expected.Kind, "Expected correct type.")
 
 	if got.Kind == types.FUNCTION {
-		if got.ReturnType != expected.ReturnType {
-			t.Fatalf("Expected return type of %s, got type of %s for function statement", expected.ReturnType.Kind, got.ReturnType.Kind)
-		}
+		assert.Equal(t, got.ReturnType, expected.ReturnType, "Return type don't match")
 		for i := range expected.Args {
-			if got.Args[i].Kind != expected.Args[i].Kind {
-				t.Fatalf("Expected arg type of %s, got arg type of %s.", expected.Args[i].Kind, got.Args[i].Kind)
-			}
+			assert.Equal(t, got.Args[i], expected.Args[i], "Args for type don't match.")
 		}
 	}
 }
 func printTypeCheckerErrors(t *testing.T, typechecker *TypeChecker) {
 	errs := typechecker.Errors()
 
-	if len(errs) != 0 {
-		t.Errorf("The typechecker had %d errors", len(errs))
-		for _, error := range errs {
-			t.Errorf("%q", error)
-		}
-		t.Fatal()
-	}
+	assert.Empty(t, errs, "Typechecker has errors!")
 }
 func printParserErrors(t *testing.T, p *parser.Parser) {
 
 	errs := p.Errors()
 
-	if len(errs) != 0 {
-		t.Errorf("The parser had %d errors", len(errs))
-		for _, error := range errs {
-			t.Errorf("%q", error)
-		}
-		t.Fatal()
-	}
+	assert.Empty(t, errs, "Parser has errors!")
 }
