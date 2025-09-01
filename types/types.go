@@ -44,7 +44,7 @@ func NewFunctionType(args []*Type, ReturnType *Type) *Type {
 }
 
 func (t *Type) String() string {
-	if t.Kind == INT || t.Kind == STRING || t.Kind == FLOAT || t.Kind == VOID || t.Kind == UNKNOWN {
+	if t.Kind == INT || t.Kind == STRING || t.Kind == FLOAT || t.Kind == VOID || t.Kind == UNKNOWN || t.Kind == BOOL {
 		return string(t.Kind)
 	}
 

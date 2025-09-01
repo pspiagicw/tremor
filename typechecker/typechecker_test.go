@@ -1,4 +1,4 @@
-package parser
+package typechecker
 
 import (
 	"testing"
@@ -42,7 +42,7 @@ func TestLetStatementBool(t *testing.T) {
 }
 
 func TestLetStatementInt(t *testing.T) {
-	input := `let a = 1`
+	input := `let a int = 1`
 
 	expected := types.IntType
 
@@ -93,6 +93,7 @@ func TestFunctionStatementWithFunctionArgTypes(t *testing.T) {
 	testTypeChecking(t, input, expected)
 }
 func TestFunctionStatementWithFunctionReturnTypes(t *testing.T) {
+	// TODO: Add support for lambdas to cover this.
 	input := `fn adder(x int, y int) (fn(int) int) then return "something" end`
 
 	expected := types.NewFunctionType(
@@ -110,7 +111,7 @@ func TestFunctionStatementWithFunctionReturnTypes(t *testing.T) {
 }
 
 func TestLetStatementString(t *testing.T) {
-	input := `let b = "name"`
+	input := `let b string = "name"`
 
 	expected := types.StringType
 
@@ -124,7 +125,7 @@ func TestReturnStatement(t *testing.T) {
 	testTypeChecking(t, input, expected)
 }
 func TestIfStatement(t *testing.T) {
-	input := `let a = true if a then end`
+	input := `let a bool = true if a then end`
 
 	expected := types.BoolType
 
@@ -135,13 +136,16 @@ func testTypeChecking(t *testing.T, input string, expected *types.Type) {
 
 	l := lexer.NewLexer(input)
 	p := parser.NewParser(l)
-	typechecker := NewTypeChcker()
+	typechecker := NewTypeChecker()
 
 	ast := p.ParseAST()
 
 	printParserErrors(t, p)
 
-	got := typechecker.TypeCheck(ast)
+	scope := NewScope()
+	scope.SetupBuiltinFunctions()
+
+	got := typechecker.TypeCheck(ast, scope)
 
 	printTypeCheckerErrors(t, typechecker)
 

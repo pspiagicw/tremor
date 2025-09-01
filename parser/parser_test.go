@@ -8,7 +8,7 @@ import (
 )
 
 func TestLetStatement(t *testing.T) {
-	input := "let a = 1"
+	input := "let a int = 1"
 
 	testParser(t, input, input)
 }
@@ -26,7 +26,7 @@ func TestLetStatementMultipleWithType(t *testing.T) {
 }
 
 func TestMultipleStatements(t *testing.T) {
-	input := "let a = 1 let b = 2"
+	input := "let a int = 1 let b int = 2"
 
 	testParser(t, input, input)
 }

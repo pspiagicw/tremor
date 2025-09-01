@@ -147,7 +147,7 @@ func (p *Parser) parseLetStatements() ast.LetStatement {
 
 	let.Name = p.expect(token.IDENTIFIER)
 
-	let.Type = p.ifexpect(token.TYPE)
+	let.Type = p.parseTypeDec()
 
 	p.expect(token.ASSIGN)
 

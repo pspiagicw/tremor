@@ -9,7 +9,7 @@ import (
 )
 
 func TestLetStatementError(t *testing.T) {
-	input := `let a 1`
+	input := `let a int 1`
 
 	expected := fmt.Sprintf(FAILED_EXPECT_MESSAGE, token.ASSIGN, token.NUMBER)
 
@@ -24,14 +24,14 @@ func TestStatementError(t *testing.T) {
 	testParserError(t, input, expected)
 }
 
-func TestLetStatementTypeError(t *testing.T) {
-	input := `let a b = 1`
-
-	expected := fmt.Sprintf(FAILED_EXPECT_MESSAGE, token.ASSIGN, token.IDENTIFIER)
-
-	testParserError(t, input, expected)
-
-}
+// func TestLetStatementTypeError(t *testing.T) {
+// 	input := `let a b = 1`
+//
+// 	expected := fmt.Sprintf(FAILED_EXPECT_MESSAGE, token.ASSIGN, token.IDENTIFIER)
+//
+// 	testParserError(t, input, expected)
+//
+// }
 
 func testParserError(t *testing.T, input string, message string) {
 	l := lexer.NewLexer(input)

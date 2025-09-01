@@ -51,7 +51,7 @@ func (a AST) String() string {
 type LetStatement struct {
 	Name  *token.Token
 	Value Expression
-	Type  *token.Token
+	Type  *types.Type
 }
 
 func (l LetStatement) statementNode() {}
@@ -61,7 +61,7 @@ func (l LetStatement) String() string {
 	if l.Type == nil {
 		elements = []string{"let", l.Name.Value, "=", l.Value.String()}
 	} else {
-		elements = []string{"let", l.Name.Value, l.Type.Value, "=", l.Value.String()}
+		elements = []string{"let", l.Name.Value, l.Type.String(), "=", l.Value.String()}
 	}
 
 	return strings.Join(elements, " ")
