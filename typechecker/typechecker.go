@@ -129,7 +129,7 @@ func (t *TypeChecker) typeFunctionStatement(node ast.FunctionStatement, scope *T
 	}
 	// TODO: Check for return statement and see if it matches the returntype mentioned in function header. (completed)
 
-	err := scope.AddFunc(node.Name.Value, functiontype)
+	err := scope.Add(node.Name.Value, functiontype)
 	if err != nil {
 		t.addError(err)
 		return types.UnknownType
@@ -139,7 +139,7 @@ func (t *TypeChecker) typeFunctionStatement(node ast.FunctionStatement, scope *T
 }
 
 func (t *TypeChecker) typeIdentifierExpression(node ast.IdentifierExpression, scope *TypeScope) *types.Type {
-	atype := scope.GetVariables(node.Value.Value)
+	atype := scope.GetVariable(node.Value.Value)
 
 	if atype == types.UnknownType {
 		t.registerError("Identifier '%s' not declared in this scope.", node.Value.Value)
@@ -192,7 +192,7 @@ func (t *TypeChecker) typeLetStatement(node ast.LetStatement, scope *TypeScope) 
 		return types.UnknownType
 	}
 
-	err := scope.AddVariable(node.Name.Value, valuetype)
+	err := scope.Add(node.Name.Value, valuetype)
 	if err != nil {
 		t.addError(err)
 		return types.UnknownType
