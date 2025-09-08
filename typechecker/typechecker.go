@@ -80,7 +80,7 @@ func (t *TypeChecker) typeBinaryExpression(node ast.BinaryExpression, scope *Typ
 	return lefttype
 }
 func (t *TypeChecker) typeFunctionCall(node ast.FunctionCallExpression, scope *TypeScope) *types.Type {
-	ftype := scope.GetFunction(node.Caller.String())
+	ftype := scope.Get(node.Caller.String())
 
 	if ftype == types.UnknownType {
 		t.registerError("Function '%s', not declared in this scope.", node.Caller.String())
@@ -139,10 +139,10 @@ func (t *TypeChecker) typeFunctionStatement(node ast.FunctionStatement, scope *T
 }
 
 func (t *TypeChecker) typeIdentifierExpression(node ast.IdentifierExpression, scope *TypeScope) *types.Type {
-	atype := scope.GetVariable(node.Value.Value)
+	atype := scope.Get(node.Value.Value)
 
 	if atype == types.UnknownType {
-		t.registerError("Identifier '%s' not declared in this scope.", node.Value.Value)
+		t.registerError("Symbol '%s' not declared in this scope.", node.Value.Value)
 	}
 
 	return atype
