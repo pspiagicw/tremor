@@ -283,3 +283,32 @@ func (f FunctionStatement) String() string {
 
 	return strings.Join(elements, " ")
 }
+
+type LambdaExpression struct {
+	Args       []*token.Token
+	Type       []*types.Type
+	Body       *BlockStatement
+	ReturnType *types.Type
+}
+
+func (l LambdaExpression) expressionNode() {}
+func (l LambdaExpression) String() string {
+	args := []string{}
+
+	for i, arg := range l.Args {
+		name := arg.Value + " " + l.Type[i].String()
+		args = append(args, name)
+	}
+
+	headerString := "fn(" + strings.Join(args, ", ") + ")"
+
+	elements := []string{}
+
+	if l.ReturnType == nil {
+		elements = []string{headerString, "then", l.Body.String(), "end"}
+	} else {
+		elements = []string{headerString, l.ReturnType.String(), "then", l.Body.String(), "end"}
+	}
+
+	return strings.Join(elements, " ")
+}

@@ -96,24 +96,6 @@ func TestFunctionStatementWithFunctionReturnType(t *testing.T) {
 	testParser(t, input, input)
 }
 
-func TestLambdaExpression(t *testing.T) {
-	input := `fn() void then print("Something") end`
-
-	testParser(t, input, input)
-}
-
-func TestLambdaExpressionWithArgs(t *testing.T) {
-	input := `fn(a int, b int) int then return a + b end`
-
-	testParser(t, input, input)
-}
-
-func TestLambdaExpressionReturn(t *testing.T) {
-	input := `return fn(a int, b int) int then return a + b end`
-
-	testParser(t, input, input)
-}
-
 func testParser(t *testing.T, input string, expected string) {
 	l := lexer.NewLexer(input)
 	p := NewParser(l)

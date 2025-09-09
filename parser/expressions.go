@@ -3,6 +3,7 @@ package parser
 import (
 	"github.com/pspiagicw/tremor/ast"
 	"github.com/pspiagicw/tremor/token"
+	"github.com/pspiagicw/tremor/types"
 )
 
 func (p *Parser) parseExpression(precedence int) ast.Expression {
@@ -173,4 +174,44 @@ func (p *Parser) parseFieldExpression(left ast.Expression) ast.Expression {
 	f.Field = p.parseExpression(FIELD)
 
 	return f
+}
+
+func (p *Parser) parseLambdaExpression() ast.Expression {
+	p.advance() // remove the fn token
+
+	l := ast.LambdaExpression{}
+
+	p.expect(token.LPAREN)
+
+	l.Args = []*token.Token{}
+	l.Type = []*types.Type{}
+
+	for p.current.Type != token.RPAREN {
+		arg := p.expect(token.IDENTIFIER)
+		l.Args = append(l.Args, arg)
+
+		argtype := p.parseTypeDec()
+		l.Type = append(l.Type, argtype)
+
+		if p.current.Type == token.RPAREN {
+			break
+		} else if p.current.Type == token.COMMA {
+			p.advance()
+		} else {
+			p.registerError(FAILED_FUNCTION_MESSAGE, p.current.Type)
+		}
+	}
+
+	p.expect(token.RPAREN)
+
+	l.ReturnType = p.parseTypeDec()
+
+	p.expect(token.THEN)
+
+	l.Body = p.parseBlockStatement()
+
+	p.expect(token.END)
+
+	return l
+
 }

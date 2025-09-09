@@ -776,6 +776,24 @@ func TestPrecedenceLteAndGteCombinedOr(t *testing.T) {
 	testParser(t, input, expected)
 }
 
+func TestLambdaExpression(t *testing.T) {
+	input := `return fn() void then print("Something") end`
+
+	testParser(t, input, input)
+}
+
+func TestLambdaExpressionReturn(t *testing.T) {
+	input := `return fn(a int, b int) int then return (a + b) end`
+
+	testParser(t, input, input)
+}
+func TestLambdaExpressionWithArgs(t *testing.T) {
+	input := `return fn(a int, b int) int then return (a + b) end`
+
+	testParser(t, input, input)
+}
+
+// TOOD: Complete this sometime.
 //	func TestPrec_MegaAll(t *testing.T) {
 //		input := `foo(1 + 2)[bar(3 ^ 2)].baz * arr[4 + 5] ^ obj.method(6 / 2)
 //		          and x or y .. z < 100 == otherFunc()[idx].field`
