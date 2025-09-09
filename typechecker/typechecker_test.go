@@ -49,6 +49,30 @@ func TestLetStatementInt(t *testing.T) {
 	testTypeChecking(t, input, expected)
 }
 
+func TestLambdaExpression(t *testing.T) {
+	input := `return fn() void then print("Hello!") end`
+
+	expected := types.NewFunctionType([]*types.Type{}, types.VoidType)
+
+	testTypeChecking(t, input, expected)
+}
+
+func TestLambdaExpressionWithReturnType(t *testing.T) {
+	input := `return fn() int then return 0 end`
+
+	expected := types.NewFunctionType([]*types.Type{}, types.IntType)
+
+	testTypeChecking(t, input, expected)
+}
+
+func TestLambdaExpressionWithArgsAndReturnType(t *testing.T) {
+	input := `fn(a int, b int) int then return a + b end`
+
+	expected := types.NewFunctionType([]*types.Type{types.IntType, types.IntType}, types.IntType)
+
+	testTypeChecking(t, input, expected)
+}
+
 func TestFunctionStatement(t *testing.T) {
 
 	input := `fn hello() void then print("Hello, World") end`
@@ -132,6 +156,166 @@ func TestIfStatement(t *testing.T) {
 	testTypeChecking(t, input, expected)
 }
 
+func TestIntAddition(t *testing.T) {
+	input := `1 + 2`
+
+	expected := types.IntType
+
+	testTypeChecking(t, input, expected)
+}
+
+func TestFloatAddition(t *testing.T) {
+	input := `1.5 + 2.3`
+
+	expected := types.FloatType
+
+	testTypeChecking(t, input, expected)
+}
+
+func TestStringConcatenation(t *testing.T) {
+	input := `"hello" + " world"`
+
+	expected := types.StringType
+
+	testTypeChecking(t, input, expected)
+}
+
+func TestBooleanAnd(t *testing.T) {
+	input := `true && false`
+
+	expected := types.BoolType
+
+	testTypeChecking(t, input, expected)
+}
+
+func TestBooleanOr(t *testing.T) {
+	input := `true || false`
+
+	expected := types.BoolType
+
+	testTypeChecking(t, input, expected)
+}
+
+func TestIntEquality(t *testing.T) {
+	input := `1 == 2`
+
+	expected := types.BoolType
+
+	testTypeChecking(t, input, expected)
+}
+
+func TestFloatEquality(t *testing.T) {
+	input := `1.1 == 2.2`
+
+	expected := types.BoolType
+
+	testTypeChecking(t, input, expected)
+}
+
+func TestStringEquality(t *testing.T) {
+	input := `"a" == "b"`
+
+	expected := types.BoolType
+
+	testTypeChecking(t, input, expected)
+}
+
+func TestIntLessThan(t *testing.T) {
+	input := `1 < 2`
+
+	expected := types.BoolType
+
+	testTypeChecking(t, input, expected)
+}
+
+func TestFloatLessThan(t *testing.T) {
+	input := `1.5 < 2.5`
+
+	expected := types.BoolType
+
+	testTypeChecking(t, input, expected)
+}
+
+func TestIntPlusFloat(t *testing.T) {
+	input := `1 + 2.5`
+
+	expected := types.FloatType
+
+	testTypeChecking(t, input, expected)
+}
+
+func TestFloatPlusInt(t *testing.T) {
+	input := `2.5 + 1`
+
+	expected := types.FloatType
+
+	testTypeChecking(t, input, expected)
+}
+
+func TestIntMinusFloat(t *testing.T) {
+	input := `10 - 3.2`
+
+	expected := types.FloatType
+
+	testTypeChecking(t, input, expected)
+}
+
+func TestFloatMinusInt(t *testing.T) {
+	input := `3.2 - 10`
+
+	expected := types.FloatType
+
+	testTypeChecking(t, input, expected)
+}
+
+func TestIntTimesFloat(t *testing.T) {
+	input := `4 * 2.5`
+
+	expected := types.FloatType
+
+	testTypeChecking(t, input, expected)
+}
+
+func TestFloatTimesInt(t *testing.T) {
+	input := `2.5 * 4`
+
+	expected := types.FloatType
+
+	testTypeChecking(t, input, expected)
+}
+
+func TestIntDivideFloat(t *testing.T) {
+	input := `10 / 2.5`
+
+	expected := types.FloatType
+
+	testTypeChecking(t, input, expected)
+}
+
+func TestFloatDivideInt(t *testing.T) {
+	input := `2.5 / 5`
+
+	expected := types.FloatType
+
+	testTypeChecking(t, input, expected)
+}
+
+func TestIntEqualsFloat(t *testing.T) {
+	input := `1 == 1.0`
+
+	expected := types.BoolType
+
+	testTypeChecking(t, input, expected)
+}
+
+func TestFloatLessThanInt(t *testing.T) {
+	input := `2.5 < 3`
+
+	expected := types.BoolType
+
+	testTypeChecking(t, input, expected)
+}
+
 func testTypeChecking(t *testing.T, input string, expected *types.Type) {
 
 	l := lexer.NewLexer(input)
@@ -149,12 +333,12 @@ func testTypeChecking(t *testing.T, input string, expected *types.Type) {
 
 	printTypeCheckerErrors(t, typechecker)
 
-	assert.Equal(t, got.Kind, expected.Kind, "Expected correct type.")
+	assert.Equal(t, expected.Kind, got.Kind, "Expected correct type.")
 
 	if got.Kind == types.FUNCTION {
-		assert.Equal(t, got.ReturnType, expected.ReturnType, "Return type don't match")
+		assert.Equal(t, expected.ReturnType, got.ReturnType, "Return type don't match")
 		for i := range expected.Args {
-			assert.Equal(t, got.Args[i], expected.Args[i], "Args for type don't match.")
+			assert.Equal(t, expected.Args[i], got.Args[i], "Args for type don't match.")
 		}
 	}
 }
