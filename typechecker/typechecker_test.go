@@ -50,7 +50,6 @@ func TestLetStatementInt(t *testing.T) {
 }
 
 func TestLambdaExpression(t *testing.T) {
-	t.Skip() // TODO: Find out why this is infinite looping!
 	input := `return fn() void then print("Hello!") end`
 
 	expected := types.NewFunctionType([]*types.Type{}, types.VoidType)
@@ -59,7 +58,6 @@ func TestLambdaExpression(t *testing.T) {
 }
 
 func TestLambdaExpressionWithReturnType(t *testing.T) {
-	t.Skip() // TODO: Find out why this is infinite looping!
 	input := `return fn() int then return 0 end`
 
 	expected := types.NewFunctionType([]*types.Type{}, types.IntType)
@@ -120,7 +118,7 @@ func TestFunctionStatementWithFunctionArgTypes(t *testing.T) {
 }
 func TestFunctionStatementWithFunctionReturnTypes(t *testing.T) {
 	// TODO: Add support for lambdas to cover this.
-	input := `fn adder(x int, y int) (fn(int) int) then return "something" end`
+	input := `fn adder(x int, y int) (fn(int) int) then return fn(a int) then return a + y end end`
 
 	expected := types.NewFunctionType(
 		[]*types.Type{
@@ -183,7 +181,7 @@ func TestStringConcatenation(t *testing.T) {
 }
 
 func TestBooleanAnd(t *testing.T) {
-	input := `true && false`
+	input := `true and false`
 
 	expected := types.BoolType
 
@@ -191,7 +189,7 @@ func TestBooleanAnd(t *testing.T) {
 }
 
 func TestBooleanOr(t *testing.T) {
-	input := `true || false`
+	input := `true or false`
 
 	expected := types.BoolType
 
@@ -222,6 +220,14 @@ func TestStringEquality(t *testing.T) {
 	testTypeChecking(t, input, expected)
 }
 
+func TestStringNotEquality(t *testing.T) {
+	input := `"a" != "b"`
+
+	expected := types.BoolType
+
+	testTypeChecking(t, input, expected)
+}
+
 func TestIntLessThan(t *testing.T) {
 	input := `1 < 2`
 
@@ -230,8 +236,56 @@ func TestIntLessThan(t *testing.T) {
 	testTypeChecking(t, input, expected)
 }
 
+func TestIntLessThanEqual(t *testing.T) {
+	input := `1 <= 2`
+
+	expected := types.BoolType
+
+	testTypeChecking(t, input, expected)
+}
+
 func TestFloatLessThan(t *testing.T) {
 	input := `1.5 < 2.5`
+
+	expected := types.BoolType
+
+	testTypeChecking(t, input, expected)
+}
+
+func TestFloatLessThanEqual(t *testing.T) {
+	input := `1.5 <= 2.5`
+
+	expected := types.BoolType
+
+	testTypeChecking(t, input, expected)
+}
+
+func TestIntGreaterThan(t *testing.T) {
+	input := `1 > 2`
+
+	expected := types.BoolType
+
+	testTypeChecking(t, input, expected)
+}
+
+func TestIntGreaterThanEqual(t *testing.T) {
+	input := `1 >= 2`
+
+	expected := types.BoolType
+
+	testTypeChecking(t, input, expected)
+}
+
+func TestFloatGreaterThan(t *testing.T) {
+	input := `1.5 > 2.5`
+
+	expected := types.BoolType
+
+	testTypeChecking(t, input, expected)
+}
+
+func TestFloatGreaterThanEqual(t *testing.T) {
+	input := `1.5 >= 2.5`
 
 	expected := types.BoolType
 

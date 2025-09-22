@@ -11,7 +11,7 @@ import (
 func TestLetStatementError(t *testing.T) {
 	input := `let a int 1`
 
-	expected := fmt.Sprintf(FAILED_EXPECT_MESSAGE, token.ASSIGN, token.NUMBER)
+	expected := fmt.Sprintf(FAILED_EXPECT_MESSAGE, token.ASSIGN, token.INTEGER)
 
 	testParserError(t, input, expected)
 }

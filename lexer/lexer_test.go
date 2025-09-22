@@ -86,8 +86,8 @@ func TestIdentifiers(t *testing.T) {
 func TestNumbers(t *testing.T) {
 	input := "123 3.14"
 	expected := []token.Token{
-		{Type: token.NUMBER, Value: "123"},
-		{Type: token.NUMBER, Value: "3.14"},
+		{Type: token.INTEGER, Value: "123"},
+		{Type: token.FLOAT, Value: "3.14"},
 		{Type: token.EOF, Value: ""},
 	}
 	testToken(t, input, expected)
@@ -161,12 +161,12 @@ func TestMultilineCommentBetweenCode(t *testing.T) {
 		{Type: token.LET, Value: "let"},
 		{Type: token.IDENTIFIER, Value: "y"},
 		{Type: token.ASSIGN, Value: "="},
-		{Type: token.NUMBER, Value: "10"},
+		{Type: token.INTEGER, Value: "10"},
 		{Type: token.IDENTIFIER, Value: "y"},
 		{Type: token.ASSIGN, Value: "="},
 		{Type: token.IDENTIFIER, Value: "y"},
 		{Type: token.PLUS, Value: "+"},
-		{Type: token.NUMBER, Value: "1"},
+		{Type: token.INTEGER, Value: "1"},
 		{Type: token.EOF, Value: ""},
 	}
 	testToken(t, input, expected)

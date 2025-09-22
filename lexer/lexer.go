@@ -1,6 +1,8 @@
 package lexer
 
 import (
+	"strings"
+
 	"github.com/pspiagicw/tremor/token"
 )
 
@@ -126,12 +128,19 @@ func (l *Lexer) comment() {
 
 }
 func predictNumber(input string) token.TokenType {
-	switch input {
-	default:
-		return token.NUMBER
-	}
+	// TOOD: Complete lexing of integer and floats.
 
+	dotcount := strings.Count(input, ".")
+
+	if dotcount == 0 {
+		return token.INTEGER
+	}
+	if dotcount == 1 {
+		return token.FLOAT
+	}
+	return token.INVALID
 }
+
 func predictType(input string) token.TokenType {
 	switch input {
 	case "if":

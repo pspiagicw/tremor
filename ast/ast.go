@@ -67,13 +67,22 @@ func (l LetStatement) String() string {
 	return strings.Join(elements, " ")
 }
 
-type NumberExpression struct {
+type IntegerExpression struct {
 	Value string
 }
 
-func (n NumberExpression) expressionNode() {}
-func (n NumberExpression) String() string {
+func (n IntegerExpression) expressionNode() {}
+func (n IntegerExpression) String() string {
 	return n.Value
+}
+
+type FloatExpression struct {
+	Value string
+}
+
+func (f FloatExpression) expressionNode() {}
+func (f FloatExpression) String() string {
+	return f.Value
 }
 
 type BinaryExpression struct {

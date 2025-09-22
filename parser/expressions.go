@@ -46,8 +46,16 @@ func (p *Parser) currentPrecedence() int {
 	return LOWEST
 }
 
-func (p *Parser) parseNumberExpression() ast.Expression {
-	n := ast.NumberExpression{
+func (p *Parser) parseIntegerExpression() ast.Expression {
+	n := ast.IntegerExpression{
+		Value: p.current.Value,
+	}
+
+	p.advance()
+	return n
+}
+func (p *Parser) parseFloatExpression() ast.Expression {
+	n := ast.FloatExpression{
 		Value: p.current.Value,
 	}
 

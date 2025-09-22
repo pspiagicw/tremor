@@ -213,13 +213,3 @@ func (p *Parser) expect(tokentype token.TokenType) *token.Token {
 
 	return current
 }
-func (p *Parser) ifexpect(tokentype token.TokenType) *token.Token {
-	current := p.current
-
-	if current.Type == tokentype {
-		p.advance()
-		return current
-	}
-
-	return nil
-}

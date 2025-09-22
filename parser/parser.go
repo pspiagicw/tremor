@@ -25,7 +25,8 @@ func NewParser(l *lexer.Lexer) *Parser {
 		infixParseFnMap:  map[token.TokenType]infixParseFn{},
 	}
 
-	p.registerPrefixFn(token.NUMBER, p.parseNumberExpression)
+	p.registerPrefixFn(token.INTEGER, p.parseIntegerExpression)
+	p.registerPrefixFn(token.FLOAT, p.parseFloatExpression)
 	p.registerPrefixFn(token.MINUS, p.parsePrefixExpression)
 	p.registerPrefixFn(token.NOT, p.parsePrefixExpression)
 	p.registerPrefixFn(token.TRUE, p.parseBooleanExpression)

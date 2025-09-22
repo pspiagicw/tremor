@@ -20,14 +20,9 @@ func NewTypeChecker() *TypeChecker {
 		errors:    []TypeError{},
 	}
 
-	// t.addFunc("print", types.NewFunctionType([]*types.Type{types.StringType}, types.VoidType))
-
 	return t
 }
 
-//	func (t *TypeChecker) addFunc(name string, returntype *types.Type) {
-//		t.settype(name, returntype)
-//	}
 func (t *TypeChecker) TypeCheck(node ast.Node, scope *TypeScope) *types.Type {
 	switch node := node.(type) {
 	case *ast.AST:
@@ -36,8 +31,10 @@ func (t *TypeChecker) TypeCheck(node ast.Node, scope *TypeScope) *types.Type {
 		return t.typeBlockStatement(node, scope)
 	case ast.ExpressionStatement:
 		return t.TypeCheck(node.Inside, scope)
-	case ast.NumberExpression:
+	case ast.IntegerExpression:
 		return types.IntType
+	case ast.FloatExpression:
+		return types.FloatType
 	case ast.StringExpression:
 		return types.StringType
 	case ast.BooleanExpression:
@@ -61,23 +58,35 @@ func (t *TypeChecker) TypeCheck(node ast.Node, scope *TypeScope) *types.Type {
 		return types.UnknownType
 	}
 }
+
 func (t *TypeChecker) typeBinaryExpression(node ast.BinaryExpression, scope *TypeScope) *types.Type {
-	lefttype := t.TypeCheck(node.Left, scope)
+	left := t.TypeCheck(node.Left, scope)
 
-	if lefttype == types.UnknownType {
+	if left == types.UnknownType {
 		return types.UnknownType
 	}
 
-	righttype := t.TypeCheck(node.Right, scope)
-	if righttype == types.UnknownType {
+	right := t.TypeCheck(node.Right, scope)
+	if right == types.UnknownType {
 		return types.UnknownType
 	}
 
-	if lefttype != righttype {
-		t.registerError("Expected same type for both operands, got %s and %s", lefttype, righttype)
+	operator := node.Operator.Type
+
+	resolver, ok := binaryResolvers[operator]
+
+	if !ok {
+		t.registerError("Unsupported operator: %q", operator)
+		return types.UnknownType
 	}
 
-	return lefttype
+	expType, err := resolver(left, right)
+	if err != nil {
+		t.registerError("%s", err.Error())
+		return types.UnknownType
+	}
+
+	return expType
 }
 func (t *TypeChecker) typeFunctionCall(node ast.FunctionCallExpression, scope *TypeScope) *types.Type {
 	ftype := scope.Get(node.Caller.String())
@@ -176,6 +185,10 @@ func (t *TypeChecker) typeIfStatement(node ast.IfStatement, scope *TypeScope) *t
 }
 func (t *TypeChecker) typeReturnStatement(node ast.ReturnStatement, scope *TypeScope) *types.Type {
 	valuetype := t.TypeCheck(node.Value, scope)
+
+	if valuetype == types.UnknownType {
+		return valuetype
+	}
 
 	rt := &types.Type{Kind: types.RETURN}
 	rt.ReturnType = valuetype
