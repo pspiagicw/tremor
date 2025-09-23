@@ -50,7 +50,7 @@ func TestLetStatementInt(t *testing.T) {
 }
 
 func TestLambdaExpression(t *testing.T) {
-	input := `return fn() void then print("Hello!") end`
+	input := `fn() void then print("Hello!")`
 
 	expected := types.NewFunctionType([]*types.Type{}, types.VoidType)
 
@@ -58,7 +58,7 @@ func TestLambdaExpression(t *testing.T) {
 }
 
 func TestLambdaExpressionWithReturnType(t *testing.T) {
-	input := `return fn() int then return 0 end`
+	input := `fn() int then return 0`
 
 	expected := types.NewFunctionType([]*types.Type{}, types.IntType)
 

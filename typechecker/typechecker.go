@@ -49,6 +49,8 @@ func (t *TypeChecker) TypeCheck(node ast.Node, scope *TypeScope) *types.Type {
 		return t.typeIdentifierExpression(node, scope)
 	case ast.FunctionStatement:
 		return t.typeFunctionStatement(node, scope)
+	case ast.LambdaExpression:
+		return t.typeLambdaExpression(node, scope)
 	case ast.FunctionCallExpression:
 		return t.typeFunctionCall(node, scope)
 	case ast.BinaryExpression:
@@ -144,6 +146,31 @@ func (t *TypeChecker) typeFunctionStatement(node ast.FunctionStatement, scope *T
 		return types.UnknownType
 	}
 
+	return functiontype
+}
+
+func (t *TypeChecker) typeLambdaExpression(node ast.LambdaExpression, scope *TypeScope) *types.Type {
+	functiontype := &types.Type{Kind: types.FUNCTION}
+
+	functiontype.ReturnType = node.ReturnType
+
+	newScope := NewEnclosedScope(scope)
+
+	functiontype.Args = []*types.Type{}
+
+	for i, argtype := range node.Type {
+		name := node.Args[i].Value
+		functiontype.Args = append(functiontype.Args, argtype)
+		newScope.Add(name, argtype)
+	}
+
+	bodyType := t.TypeCheck(node.Body, newScope)
+
+	if bodyType != functiontype.ReturnType {
+		t.registerError("Expected return type of %s, got %s", functiontype.ReturnType, bodyType)
+		return bodyType
+	}
+	// TODO: Check for return statement and see if it matches the returntype mentioned in function header. (completed)
 	return functiontype
 }
 
