@@ -50,7 +50,7 @@ func TestLetStatementInt(t *testing.T) {
 }
 
 func TestLambdaExpression(t *testing.T) {
-	input := `fn() void then print("Hello!")`
+	input := `let a fn() void = fn() void then print("Hello!") end`
 
 	expected := types.NewFunctionType([]*types.Type{}, types.VoidType)
 
@@ -58,7 +58,7 @@ func TestLambdaExpression(t *testing.T) {
 }
 
 func TestLambdaExpressionWithReturnType(t *testing.T) {
-	input := `fn() int then return 0`
+	input := `let a fn() int = fn() int then return 0 end`
 
 	expected := types.NewFunctionType([]*types.Type{}, types.IntType)
 
@@ -66,7 +66,7 @@ func TestLambdaExpressionWithReturnType(t *testing.T) {
 }
 
 func TestLambdaExpressionWithArgsAndReturnType(t *testing.T) {
-	input := `fn(a int, b int) int then return a + b end`
+	input := `let a fn(int, int) int = fn(a int, b int) int then return a + b end`
 
 	expected := types.NewFunctionType([]*types.Type{types.IntType, types.IntType}, types.IntType)
 
@@ -118,7 +118,7 @@ func TestFunctionStatementWithFunctionArgTypes(t *testing.T) {
 }
 func TestFunctionStatementWithFunctionReturnTypes(t *testing.T) {
 	// TODO: Add support for lambdas to cover this.
-	input := `fn adder(x int, y int) (fn(int) int) then return fn(a int) then return a + y end end`
+	input := `fn adder(x int, y int) (fn(int) int) then return fn(a int) int then return a + y end end`
 
 	expected := types.NewFunctionType(
 		[]*types.Type{

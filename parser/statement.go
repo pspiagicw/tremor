@@ -37,7 +37,7 @@ func (p *Parser) parseFunctionStatement() ast.FunctionStatement {
 	f.Args = []*token.Token{}
 	f.Type = []*types.Type{}
 
-	for p.current.Type != token.RPAREN {
+	for p.current.Type != token.EOF && p.current.Type != token.RPAREN {
 		arg := p.expect(token.IDENTIFIER)
 		f.Args = append(f.Args, arg)
 

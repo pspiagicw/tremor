@@ -2,6 +2,7 @@ package typechecker
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/pspiagicw/tremor/ast"
 	"github.com/pspiagicw/tremor/types"
@@ -134,7 +135,7 @@ func (t *TypeChecker) typeFunctionStatement(node ast.FunctionStatement, scope *T
 
 	bodyType := t.TypeCheck(node.Body, newScope)
 
-	if bodyType != functiontype.ReturnType {
+	if !reflect.DeepEqual(bodyType, functiontype.ReturnType) {
 		t.registerError("Expected return type of %s, got %s", functiontype.ReturnType, bodyType)
 		return bodyType
 	}
@@ -227,8 +228,8 @@ func (t *TypeChecker) typeLetStatement(node ast.LetStatement, scope *TypeScope) 
 
 	pretype := node.Type
 
-	if valuetype != pretype {
-		t.registerError("Expected type of %s for value in let statement, got %s.", pretype.Kind, valuetype.Kind)
+	if !reflect.DeepEqual(valuetype, pretype) {
+		t.registerError("Expected type of %s (pre-type), got %s", pretype.Kind, valuetype.Kind)
 		return types.UnknownType
 	}
 
