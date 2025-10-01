@@ -16,6 +16,7 @@ var (
 	BoolType   = &Type{Kind: BOOL}
 	FloatType  = &Type{Kind: FLOAT}
 	VoidType   = &Type{Kind: VOID}
+	AutoType   = &Type{Kind: AUTO}
 
 	UnknownType = &Type{Kind: UNKNOWN}
 )
@@ -28,6 +29,7 @@ const (
 	FUNCTION TypeKind = "function"
 
 	VOID TypeKind = "void"
+	AUTO TypeKind = "auto"
 
 	UNKNOWN TypeKind = "unknown"
 	RETURN  TypeKind = "return"
@@ -44,7 +46,7 @@ func NewFunctionType(args []*Type, ReturnType *Type) *Type {
 }
 
 func (t *Type) String() string {
-	if t.Kind == INT || t.Kind == STRING || t.Kind == FLOAT || t.Kind == VOID || t.Kind == UNKNOWN || t.Kind == BOOL {
+	if t.Kind == INT || t.Kind == STRING || t.Kind == FLOAT || t.Kind == VOID || t.Kind == UNKNOWN || t.Kind == BOOL || t.Kind == AUTO {
 		return string(t.Kind)
 	}
 

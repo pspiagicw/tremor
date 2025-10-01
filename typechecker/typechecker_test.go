@@ -41,6 +41,14 @@ func TestLetStatementBool(t *testing.T) {
 	testTypeChecking(t, input, expected)
 }
 
+func TestLetStatementWithoutType(t *testing.T) {
+	input := `let a = true`
+
+	expected := types.BoolType
+
+	testTypeChecking(t, input, expected)
+}
+
 func TestLetStatementInt(t *testing.T) {
 	input := `let a int = 1`
 

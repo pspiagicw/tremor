@@ -37,6 +37,14 @@ func TestMultipleStatements(t *testing.T) {
 	testParser(t, input, input)
 }
 
+func TestLetStatementWithoutType(t *testing.T) {
+	input := `let a = 1`
+
+	expected := `let a auto = 1`
+
+	testParser(t, input, expected)
+}
+
 func TestIfStatement(t *testing.T) {
 	input := `if true then print("true") end`
 

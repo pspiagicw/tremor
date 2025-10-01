@@ -13,12 +13,14 @@ type TypeError error
 type TypeChecker struct {
 	errors    []TypeError
 	variables map[string]*types.Type
+	info      []string
 }
 
 func NewTypeChecker() *TypeChecker {
 	t := &TypeChecker{
 		variables: map[string]*types.Type{},
 		errors:    []TypeError{},
+		info:      []string{},
 	}
 
 	return t
@@ -228,7 +230,10 @@ func (t *TypeChecker) typeLetStatement(node ast.LetStatement, scope *TypeScope) 
 
 	pretype := node.Type
 
-	if !reflect.DeepEqual(valuetype, pretype) {
+	if pretype == types.AutoType {
+		t.registerInfo("Auto-typed into %s", valuetype)
+		pretype = valuetype
+	} else if !reflect.DeepEqual(valuetype, pretype) {
 		t.registerError("Expected type of %s (pre-type), got %s", pretype.Kind, valuetype.Kind)
 		return types.UnknownType
 	}
@@ -267,46 +272,13 @@ func (t *TypeChecker) typeBlockStatement(node *ast.BlockStatement, scope *TypeSc
 func (t *TypeChecker) registerError(format string, args ...any) {
 	t.errors = append(t.errors, fmt.Errorf(format, args...))
 }
+func (t *TypeChecker) registerInfo(format string, args ...any) {
+	msg := fmt.Sprintf(format, args...)
+	t.info = append(t.info, msg)
+}
 func (t *TypeChecker) addError(err error) {
 	t.errors = append(t.errors, err)
 }
 func (t *TypeChecker) Errors() []TypeError {
 	return t.errors
 }
-
-// func getType(value string) *types.Type {
-// 	switch value {
-// 	case "int":
-// 		return types.IntType
-// 	case "bool":
-// 		return types.BoolType
-// 	case "string":
-// 		return types.StringType
-// 	case "void":
-// 		return types.VoidType
-// 	default:
-// 		return types.UnknownType
-// 	}
-// }
-
-// func (t *TypeChecker) varexists(name string) bool {
-// 	_, ok := t.variables[name]
-//
-// 	return ok
-// }
-// func (t *TypeChecker) gettype(name string) *types.Type {
-// 	if t.varexists(name) {
-// 		return t.variables[name]
-// 	}
-// 	return types.UnknownType
-// }
-// func (t *TypeChecker) settype(name string, valuetype *types.Type) *types.Type {
-// 	if t.varexists(name) {
-// 		if valuetype != t.gettype(name) {
-// 			t.registerError("Variable '%s' exists with type: %s. Tried to assign to type %s", name, t.gettype(name).Kind, valuetype.Kind)
-// 			return types.UnknownType
-// 		}
-// 	}
-// 	t.variables[name] = valuetype
-// 	return valuetype
-// }

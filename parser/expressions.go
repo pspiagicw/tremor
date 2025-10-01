@@ -198,7 +198,7 @@ func (p *Parser) parseLambdaExpression() ast.Expression {
 		arg := p.expect(token.IDENTIFIER)
 		l.Args = append(l.Args, arg)
 
-		argtype := p.parseTypeDec()
+		argtype := p.parseTypeDec(false)
 		l.Type = append(l.Type, argtype)
 
 		if p.current.Type == token.RPAREN {
@@ -212,7 +212,7 @@ func (p *Parser) parseLambdaExpression() ast.Expression {
 
 	p.expect(token.RPAREN)
 
-	l.ReturnType = p.parseTypeDec()
+	l.ReturnType = p.parseTypeDec(false)
 
 	p.expect(token.THEN)
 

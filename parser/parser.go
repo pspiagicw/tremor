@@ -16,6 +16,7 @@ type Parser struct {
 	prefixParseFnMap map[token.TokenType]prefixParseFn
 	infixParseFnMap  map[token.TokenType]infixParseFn
 	errors           []ParserError
+	info             []string
 }
 
 func NewParser(l *lexer.Lexer) *Parser {
@@ -23,6 +24,8 @@ func NewParser(l *lexer.Lexer) *Parser {
 		lexer:            l,
 		prefixParseFnMap: map[token.TokenType]prefixParseFn{},
 		infixParseFnMap:  map[token.TokenType]infixParseFn{},
+		errors:           []ParserError{},
+		info:             []string{},
 	}
 
 	p.registerPrefixFn(token.INTEGER, p.parseIntegerExpression)
@@ -97,4 +100,8 @@ func (p *Parser) Errors() []ParserError {
 func (p *Parser) registerError(format string, args ...any) {
 	err := fmt.Errorf(format, args...)
 	p.errors = append(p.errors, err)
+}
+func (p *Parser) registerInfo(format string, args ...any) {
+	msg := fmt.Sprintf(format, args...)
+	p.info = append(p.info, msg)
 }

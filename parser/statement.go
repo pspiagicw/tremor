@@ -41,7 +41,7 @@ func (p *Parser) parseFunctionStatement() ast.FunctionStatement {
 		arg := p.expect(token.IDENTIFIER)
 		f.Args = append(f.Args, arg)
 
-		argtype := p.parseTypeDec()
+		argtype := p.parseTypeDec(true)
 		f.Type = append(f.Type, argtype)
 
 		if p.current.Type == token.RPAREN {
@@ -55,7 +55,7 @@ func (p *Parser) parseFunctionStatement() ast.FunctionStatement {
 
 	p.expect(token.RPAREN)
 
-	f.ReturnType = p.parseTypeDec()
+	f.ReturnType = p.parseTypeDec(false)
 
 	p.expect(token.THEN)
 
@@ -66,7 +66,7 @@ func (p *Parser) parseFunctionStatement() ast.FunctionStatement {
 	return f
 
 }
-func (p *Parser) parseTypeDec() *types.Type {
+func (p *Parser) parseTypeDec(auto bool) *types.Type {
 	switch p.current.Type {
 	case token.TYPE:
 		switch p.current.Value {
@@ -94,14 +94,19 @@ func (p *Parser) parseTypeDec() *types.Type {
 	case token.LPAREN:
 		return p.parseNestedTypeDec()
 	default:
-		p.registerError("Can't parse type, got %s", p.current.Type)
-		return types.UnknownType
+		if auto {
+			p.registerInfo("Got %s, assuming 'auto' typing", p.current.Type)
+			return types.AutoType
+		} else {
+			p.registerError("Can't parse type, got %s", p.current.Type)
+			return types.UnknownType
+		}
 	}
 }
 func (p *Parser) parseNestedTypeDec() *types.Type {
 	p.advance() // Advance over the LPAREN
 
-	tp := p.parseTypeDec()
+	tp := p.parseTypeDec(false)
 
 	p.expect(token.RPAREN)
 
@@ -116,7 +121,7 @@ func (p *Parser) parseFunctionTypeDec() *types.Type {
 	ft.Args = []*types.Type{}
 
 	for p.current.Type != token.RPAREN {
-		ft.Args = append(ft.Args, p.parseTypeDec())
+		ft.Args = append(ft.Args, p.parseTypeDec(false))
 
 		if p.current.Type == token.RPAREN {
 			break
@@ -129,7 +134,7 @@ func (p *Parser) parseFunctionTypeDec() *types.Type {
 
 	p.expect(token.RPAREN)
 
-	ft.ReturnType = p.parseTypeDec()
+	ft.ReturnType = p.parseTypeDec(false)
 
 	return ft
 }
@@ -147,7 +152,7 @@ func (p *Parser) parseLetStatements() ast.LetStatement {
 
 	let.Name = p.expect(token.IDENTIFIER)
 
-	let.Type = p.parseTypeDec()
+	let.Type = p.parseTypeDec(true)
 
 	p.expect(token.ASSIGN)
 
