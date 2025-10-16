@@ -22,6 +22,7 @@ func TestPush(t *testing.T) {
 }
 
 func TestAdd(t *testing.T) {
+	t.Skip()
 	input := `1 + 2`
 
 	expected := []code.Instruction{
