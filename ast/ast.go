@@ -16,6 +16,10 @@ const (
 	MULTILINE
 )
 
+type InferredType struct {
+	Inferred *types.Type
+}
+
 type Node interface {
 	String() string
 }
@@ -89,6 +93,7 @@ type BinaryExpression struct {
 	Left     Expression
 	Right    Expression
 	Operator *token.Token
+	Type     *types.Type
 }
 
 func (b BinaryExpression) expressionNode() {}

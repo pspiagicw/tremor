@@ -20,14 +20,15 @@ func main() {
 	program := os.Args[1]
 
 	code := readFile(program)
-	AST := parseFile(code)
+	AST, tc, scope := parseFile(code)
 
-	c := compiler.NewCompiler()
+	c := compiler.NewCompiler(tc, scope)
 	c.Compile(AST)
 
 	bytecode := c.Bytecode()
 	content := convert.Convert(bytecode.Tape, bytecode.Constants)
-	err := os.WriteFile(program+".bc", content, os.ModeAppend)
+
+	err := os.WriteFile(program+".bc", content, 0644)
 	if err != nil {
 		goreland.LogFatal("Can't write to file")
 	}
@@ -44,7 +45,7 @@ func readFile(program string) string {
 	return string(content)
 }
 
-func parseFile(code string) ast.Node {
+func parseFile(code string) (ast.Node, *typechecker.TypeChecker, *typechecker.TypeScope) {
 	l := lexer.NewLexer(code)
 	p := parser.NewParser(l)
 
@@ -63,5 +64,5 @@ func parseFile(code string) ast.Node {
 		goreland.LogFatal("Type checker has errors: %v", p.Errors())
 	}
 
-	return ast
+	return ast, tp, scope
 }

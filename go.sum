@@ -36,6 +36,8 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/pspiagicw/fenc v0.0.0-20251015065150-6084a3ac7615 h1:WWHmPUAluRCkzu1AIqBANWoIwD/ZPHttOKnz5jCwJCM=
 github.com/pspiagicw/fenc v0.0.0-20251015065150-6084a3ac7615/go.mod h1:3nnxK7UMIJ1rzSlBeB5KC5RkvKOsIp8FWNIGDSHHzOg=
+github.com/pspiagicw/fenc v0.0.0-20251016094401-cf798c9eebc4 h1:yYiHBXsNhBSFVMZizXhxc54E7v0Rnw+Z2eebb3Z/Rjs=
+github.com/pspiagicw/fenc v0.0.0-20251016094401-cf798c9eebc4/go.mod h1:K6Pv7+DCKZJWXurEO1eS9YDXg8eh+wfVbCrOC0PT7R8=
 github.com/pspiagicw/goreland v0.1.1 h1:SMCQWvmH0txQMiBad72n3KHVF4PHs+pwzjn893wna0Q=
 github.com/pspiagicw/goreland v0.1.1/go.mod h1:w9C97TNLperGU930lN/hc2XuWUlYzPbBUW1OA1ka4DM=
 github.com/rivo/uniseg v0.4.7 h1:WUdvkW8uEhrYfLC4ZzdpI2ztxP1I582+49Oc5Mq64VQ=

@@ -3,7 +3,7 @@ module github.com/pspiagicw/tremor
 go 1.24.6
 
 require (
-	github.com/pspiagicw/fenc v0.0.0-20251015065150-6084a3ac7615
+	github.com/pspiagicw/fenc v0.0.0-20251016094401-cf798c9eebc4
 	github.com/pspiagicw/goreland v0.1.1
 	github.com/stretchr/testify v1.11.0
 )
