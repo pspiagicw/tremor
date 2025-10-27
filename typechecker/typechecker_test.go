@@ -181,7 +181,7 @@ func TestFloatAddition(t *testing.T) {
 }
 
 func TestStringConcatenation(t *testing.T) {
-	input := `"hello" + " world"`
+	input := `"hello" .. " world"`
 
 	expected := types.StringType
 

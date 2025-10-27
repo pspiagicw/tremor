@@ -37,9 +37,26 @@ func (c *Compiler) Compile(node ast.Node) {
 		c.Compile(node.Inside)
 	case ast.BinaryExpression:
 		c.compileBinary(node)
+	case ast.BooleanExpression:
+		c.compileBoolean(node)
+	case ast.StringExpression:
+		c.compileString(node)
 	default:
 		goreland.LogFatal("Can't compile type '%v'", node)
 	}
+}
+func (c *Compiler) compileString(node ast.StringExpression) {
+	value := node.Value
+
+	c.e.PushString(value)
+}
+func (c *Compiler) compileBoolean(node ast.BooleanExpression) {
+	value := false
+	if node.Value.Value == "true" {
+		value = true
+	}
+
+	c.e.PushBool(value)
 }
 func (c *Compiler) compileFloat(node ast.FloatExpression) {
 	value, err := strconv.ParseFloat(node.Value, 32)
@@ -58,8 +75,44 @@ func (c *Compiler) compileBinary(node ast.BinaryExpression) {
 	switch operator {
 	case token.PLUS:
 		c.emitPlus(nodeType)
+	case token.MINUS:
+		c.emitMinus(nodeType)
+	case token.MULTIPLY:
+		c.emitMultiply(nodeType)
+	case token.SLASH:
+		c.emitSlash(nodeType)
+	case token.CONCAT:
+		c.e.AddString()
+	case token.OR:
+		c.e.OrBool()
+	case token.AND:
+		c.e.AndBool()
 	}
 
+}
+func (c *Compiler) emitSlash(nodeType *types.Type) {
+	switch nodeType {
+	case types.IntType:
+		c.e.DivInt()
+	case types.FloatType:
+		c.e.DivFloat()
+	}
+}
+func (c *Compiler) emitMultiply(nodeType *types.Type) {
+	switch nodeType {
+	case types.IntType:
+		c.e.MulInt()
+	case types.FloatType:
+		c.e.MulFloat()
+	}
+}
+func (c *Compiler) emitMinus(nodeType *types.Type) {
+	switch nodeType {
+	case types.IntType:
+		c.e.SubInt()
+	case types.FloatType:
+		c.e.SubFloat()
+	}
 }
 func (c *Compiler) emitPlus(nodeType *types.Type) {
 	switch nodeType {

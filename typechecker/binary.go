@@ -10,7 +10,7 @@ import (
 type typeResolver func(left, right *types.Type) (*types.Type, error)
 
 var binaryResolvers = map[token.TokenType]typeResolver{
-	token.PLUS:     resolvePlus,
+	token.PLUS:     resolveArithmetic,
 	token.MINUS:    resolveArithmetic,
 	token.MULTIPLY: resolveArithmetic,
 	token.SLASH:    resolveArithmetic,
@@ -22,20 +22,17 @@ var binaryResolvers = map[token.TokenType]typeResolver{
 	token.GTE:      resolveComparison,
 	token.AND:      resolveLogical,
 	token.OR:       resolveLogical,
+	token.CONCAT:   resolveString,
 }
 
-func resolvePlus(left, right *types.Type) (*types.Type, error) {
-	if left == types.StringType || right == types.StringType {
-		if left == types.StringType && right == types.StringType {
-			return types.StringType, nil
-		}
-		return nil, fmt.Errorf("Cannot add '%s' and '%s'", left, right)
+func resolveString(left, right *types.Type) (*types.Type, error) {
+	if left == types.StringType && right == types.StringType {
+		return types.StringType, nil
 	}
-
-	return resolveArithmetic(left, right)
+	return nil, fmt.Errorf("Invalid operands for elipsis: %s, %s", left, right)
 }
-
 func resolveArithmetic(left, right *types.Type) (*types.Type, error) {
+
 	if (left == types.IntType || left == types.FloatType) && (right == types.FloatType || right == types.IntType) {
 		if left == types.FloatType || right == types.FloatType {
 			return types.FloatType, nil
