@@ -32,31 +32,31 @@ func (t *TypeChecker) TypeCheck(node ast.Node, scope *TypeScope) *types.Type {
 		return t.typeAST(node, scope)
 	case *ast.BlockStatement:
 		return t.typeBlockStatement(node, scope)
-	case ast.ExpressionStatement:
+	case *ast.ExpressionStatement:
 		return t.TypeCheck(node.Inside, scope)
-	case ast.IntegerExpression:
+	case *ast.IntegerExpression:
 		return types.IntType
-	case ast.FloatExpression:
+	case *ast.FloatExpression:
 		return types.FloatType
-	case ast.StringExpression:
+	case *ast.StringExpression:
 		return types.StringType
-	case ast.BooleanExpression:
+	case *ast.BooleanExpression:
 		return types.BoolType
-	case ast.LetStatement:
+	case *ast.LetStatement:
 		return t.typeLetStatement(node, scope)
-	case ast.ReturnStatement:
+	case *ast.ReturnStatement:
 		return t.typeReturnStatement(node, scope)
-	case ast.IfStatement:
+	case *ast.IfStatement:
 		return t.typeIfStatement(node, scope)
-	case ast.IdentifierExpression:
+	case *ast.IdentifierExpression:
 		return t.typeIdentifierExpression(node, scope)
-	case ast.FunctionStatement:
+	case *ast.FunctionStatement:
 		return t.typeFunctionStatement(node, scope)
-	case ast.LambdaExpression:
+	case *ast.LambdaExpression:
 		return t.typeLambdaExpression(node, scope)
-	case ast.FunctionCallExpression:
+	case *ast.FunctionCallExpression:
 		return t.typeFunctionCall(node, scope)
-	case ast.BinaryExpression:
+	case *ast.BinaryExpression:
 		return t.typeBinaryExpression(node, scope)
 	default:
 		t.registerError("Can't check type of '%T'", node)
@@ -64,7 +64,7 @@ func (t *TypeChecker) TypeCheck(node ast.Node, scope *TypeScope) *types.Type {
 	}
 }
 
-func (t *TypeChecker) typeBinaryExpression(node ast.BinaryExpression, scope *TypeScope) *types.Type {
+func (t *TypeChecker) typeBinaryExpression(node *ast.BinaryExpression, scope *TypeScope) *types.Type {
 	left := t.TypeCheck(node.Left, scope)
 
 	if left == types.UnknownType {
@@ -93,7 +93,7 @@ func (t *TypeChecker) typeBinaryExpression(node ast.BinaryExpression, scope *Typ
 
 	return expType
 }
-func (t *TypeChecker) typeFunctionCall(node ast.FunctionCallExpression, scope *TypeScope) *types.Type {
+func (t *TypeChecker) typeFunctionCall(node *ast.FunctionCallExpression, scope *TypeScope) *types.Type {
 	ftype := scope.Get(node.Caller.String())
 
 	if ftype == types.UnknownType {
@@ -120,7 +120,7 @@ func (t *TypeChecker) typeFunctionCall(node ast.FunctionCallExpression, scope *T
 	return ftype.ReturnType
 }
 
-func (t *TypeChecker) typeFunctionStatement(node ast.FunctionStatement, scope *TypeScope) *types.Type {
+func (t *TypeChecker) typeFunctionStatement(node *ast.FunctionStatement, scope *TypeScope) *types.Type {
 	functiontype := &types.Type{Kind: types.FUNCTION}
 
 	functiontype.ReturnType = node.ReturnType
@@ -152,7 +152,7 @@ func (t *TypeChecker) typeFunctionStatement(node ast.FunctionStatement, scope *T
 	return functiontype
 }
 
-func (t *TypeChecker) typeLambdaExpression(node ast.LambdaExpression, scope *TypeScope) *types.Type {
+func (t *TypeChecker) typeLambdaExpression(node *ast.LambdaExpression, scope *TypeScope) *types.Type {
 	functiontype := &types.Type{Kind: types.FUNCTION}
 
 	functiontype.ReturnType = node.ReturnType
@@ -177,7 +177,7 @@ func (t *TypeChecker) typeLambdaExpression(node ast.LambdaExpression, scope *Typ
 	return functiontype
 }
 
-func (t *TypeChecker) typeIdentifierExpression(node ast.IdentifierExpression, scope *TypeScope) *types.Type {
+func (t *TypeChecker) typeIdentifierExpression(node *ast.IdentifierExpression, scope *TypeScope) *types.Type {
 	atype := scope.Get(node.Value.Value)
 
 	if atype == types.UnknownType {
@@ -186,7 +186,7 @@ func (t *TypeChecker) typeIdentifierExpression(node ast.IdentifierExpression, sc
 
 	return atype
 }
-func (t *TypeChecker) typeIfStatement(node ast.IfStatement, scope *TypeScope) *types.Type {
+func (t *TypeChecker) typeIfStatement(node *ast.IfStatement, scope *TypeScope) *types.Type {
 	condtype := t.TypeCheck(node.Condition, scope)
 
 	if condtype == types.UnknownType {
@@ -213,7 +213,7 @@ func (t *TypeChecker) typeIfStatement(node ast.IfStatement, scope *TypeScope) *t
 
 	return condtype
 }
-func (t *TypeChecker) typeReturnStatement(node ast.ReturnStatement, scope *TypeScope) *types.Type {
+func (t *TypeChecker) typeReturnStatement(node *ast.ReturnStatement, scope *TypeScope) *types.Type {
 	valuetype := t.TypeCheck(node.Value, scope)
 
 	if valuetype == types.UnknownType {
@@ -225,7 +225,7 @@ func (t *TypeChecker) typeReturnStatement(node ast.ReturnStatement, scope *TypeS
 
 	return rt
 }
-func (t *TypeChecker) typeLetStatement(node ast.LetStatement, scope *TypeScope) *types.Type {
+func (t *TypeChecker) typeLetStatement(node *ast.LetStatement, scope *TypeScope) *types.Type {
 	valuetype := t.TypeCheck(node.Value, scope)
 
 	pretype := node.Type

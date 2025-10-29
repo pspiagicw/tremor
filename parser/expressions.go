@@ -47,7 +47,7 @@ func (p *Parser) currentPrecedence() int {
 }
 
 func (p *Parser) parseIntegerExpression() ast.Expression {
-	n := ast.IntegerExpression{
+	n := &ast.IntegerExpression{
 		Value: p.current.Value,
 	}
 
@@ -55,7 +55,7 @@ func (p *Parser) parseIntegerExpression() ast.Expression {
 	return n
 }
 func (p *Parser) parseFloatExpression() ast.Expression {
-	n := ast.FloatExpression{
+	n := &ast.FloatExpression{
 		Value: p.current.Value,
 	}
 
@@ -63,7 +63,7 @@ func (p *Parser) parseFloatExpression() ast.Expression {
 	return n
 }
 func (p *Parser) parseStringExpression() ast.Expression {
-	s := ast.StringExpression{
+	s := &ast.StringExpression{
 		Value: p.current.Value,
 	}
 
@@ -81,7 +81,7 @@ func (p *Parser) parseStringExpression() ast.Expression {
 }
 
 func (p *Parser) parseIdentifierExpression() ast.Expression {
-	i := ast.IdentifierExpression{
+	i := &ast.IdentifierExpression{
 		Value: p.current,
 	}
 
@@ -89,7 +89,7 @@ func (p *Parser) parseIdentifierExpression() ast.Expression {
 	return i
 }
 func (p *Parser) parseBooleanExpression() ast.Expression {
-	b := ast.BooleanExpression{
+	b := &ast.BooleanExpression{
 		Value: p.current,
 	}
 	p.advance()
@@ -97,7 +97,7 @@ func (p *Parser) parseBooleanExpression() ast.Expression {
 	return b
 }
 func (p *Parser) parseParenthesisExpression() ast.Expression {
-	exp := ast.ParenthesisExpression{}
+	exp := &ast.ParenthesisExpression{}
 
 	p.advance()
 
@@ -110,7 +110,7 @@ func (p *Parser) parseParenthesisExpression() ast.Expression {
 }
 
 func (p *Parser) parsePrefixExpression() ast.Expression {
-	exp := ast.PrefixExpression{
+	exp := &ast.PrefixExpression{
 		Operator: p.current,
 	}
 
@@ -124,7 +124,7 @@ func (p *Parser) parsePrefixExpression() ast.Expression {
 func (p *Parser) parseBinaryExpression(left ast.Expression) ast.Expression {
 	operator := p.current
 
-	b := ast.BinaryExpression{
+	b := &ast.BinaryExpression{
 		Left:     left,
 		Operator: operator,
 	}
@@ -138,7 +138,7 @@ func (p *Parser) parseBinaryExpression(left ast.Expression) ast.Expression {
 	return b
 }
 func (p *Parser) parseFunctionCallExpression(left ast.Expression) ast.Expression {
-	f := ast.FunctionCallExpression{
+	f := &ast.FunctionCallExpression{
 		Caller: left,
 	}
 
@@ -159,7 +159,7 @@ func (p *Parser) parseFunctionCallExpression(left ast.Expression) ast.Expression
 	return f
 }
 func (p *Parser) parseIndexExpression(left ast.Expression) ast.Expression {
-	i := ast.IndexExpression{
+	i := &ast.IndexExpression{
 		Caller: left,
 	}
 
@@ -172,7 +172,7 @@ func (p *Parser) parseIndexExpression(left ast.Expression) ast.Expression {
 	return i
 }
 func (p *Parser) parseFieldExpression(left ast.Expression) ast.Expression {
-	f := ast.FieldExpression{
+	f := &ast.FieldExpression{
 		Caller: left,
 	}
 
@@ -187,7 +187,7 @@ func (p *Parser) parseFieldExpression(left ast.Expression) ast.Expression {
 func (p *Parser) parseLambdaExpression() ast.Expression {
 	p.advance() // remove the fn token
 
-	l := ast.LambdaExpression{}
+	l := &ast.LambdaExpression{}
 
 	p.expect(token.LPAREN)
 

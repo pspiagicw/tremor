@@ -25,10 +25,10 @@ func (p *Parser) parseStatement() ast.Statement {
 	}
 }
 
-func (p *Parser) parseFunctionStatement() ast.FunctionStatement {
+func (p *Parser) parseFunctionStatement() *ast.FunctionStatement {
 	p.advance()
 
-	f := ast.FunctionStatement{}
+	f := &ast.FunctionStatement{}
 
 	f.Name = p.expect(token.IDENTIFIER)
 
@@ -138,17 +138,17 @@ func (p *Parser) parseFunctionTypeDec() *types.Type {
 
 	return ft
 }
-func (p *Parser) parseExpressionStatement() ast.ExpressionStatement {
-	e := ast.ExpressionStatement{}
+func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
+	e := &ast.ExpressionStatement{}
 
 	e.Inside = p.parseExpression(LOWEST)
 
 	return e
 }
-func (p *Parser) parseLetStatements() ast.LetStatement {
+func (p *Parser) parseLetStatements() *ast.LetStatement {
 	p.advance()
 
-	let := ast.LetStatement{}
+	let := &ast.LetStatement{}
 
 	let.Name = p.expect(token.IDENTIFIER)
 
@@ -160,21 +160,21 @@ func (p *Parser) parseLetStatements() ast.LetStatement {
 
 	return let
 }
-func (p *Parser) parseReturnStatement() ast.ReturnStatement {
+func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 
 	p.advance()
 
-	r := ast.ReturnStatement{}
+	r := &ast.ReturnStatement{}
 
 	r.Value = p.parseExpression(LOWEST)
 
 	return r
 }
-func (p *Parser) parseIfStatement() ast.IfStatement {
+func (p *Parser) parseIfStatement() *ast.IfStatement {
 
 	p.advance()
 
-	i := ast.IfStatement{}
+	i := &ast.IfStatement{}
 
 	i.Condition = p.parseExpression(LOWEST)
 

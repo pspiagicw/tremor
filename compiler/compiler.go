@@ -29,28 +29,28 @@ func (c *Compiler) Compile(node ast.Node) {
 	switch node := node.(type) {
 	case *ast.AST:
 		c.compileAST(node)
-	case ast.IntegerExpression:
+	case *ast.IntegerExpression:
 		c.compileInteger(node)
-	case ast.FloatExpression:
+	case *ast.FloatExpression:
 		c.compileFloat(node)
-	case ast.ExpressionStatement:
+	case *ast.ExpressionStatement:
 		c.Compile(node.Inside)
-	case ast.BinaryExpression:
+	case *ast.BinaryExpression:
 		c.compileBinary(node)
-	case ast.BooleanExpression:
+	case *ast.BooleanExpression:
 		c.compileBoolean(node)
-	case ast.StringExpression:
+	case *ast.StringExpression:
 		c.compileString(node)
 	default:
 		goreland.LogFatal("Can't compile type '%v'", node)
 	}
 }
-func (c *Compiler) compileString(node ast.StringExpression) {
+func (c *Compiler) compileString(node *ast.StringExpression) {
 	value := node.Value
 
 	c.e.PushString(value)
 }
-func (c *Compiler) compileBoolean(node ast.BooleanExpression) {
+func (c *Compiler) compileBoolean(node *ast.BooleanExpression) {
 	value := false
 	if node.Value.Value == "true" {
 		value = true
@@ -58,14 +58,14 @@ func (c *Compiler) compileBoolean(node ast.BooleanExpression) {
 
 	c.e.PushBool(value)
 }
-func (c *Compiler) compileFloat(node ast.FloatExpression) {
+func (c *Compiler) compileFloat(node *ast.FloatExpression) {
 	value, err := strconv.ParseFloat(node.Value, 32)
 	if err != nil {
 		goreland.LogFatal("Error converting '%s' to float", node.Value)
 	}
 	c.e.PushFloat(float32(value))
 }
-func (c *Compiler) compileBinary(node ast.BinaryExpression) {
+func (c *Compiler) compileBinary(node *ast.BinaryExpression) {
 	operator := node.Operator.Type
 	nodeType := c.tp.TypeCheck(node, c.scope)
 
@@ -122,7 +122,7 @@ func (c *Compiler) emitPlus(nodeType *types.Type) {
 		c.e.AddFloat()
 	}
 }
-func (c *Compiler) compileInteger(node ast.IntegerExpression) {
+func (c *Compiler) compileInteger(node *ast.IntegerExpression) {
 	value, err := strconv.Atoi(node.Value)
 	if err != nil {
 		goreland.LogFatal("Error converting '%s' to integer", node.Value)
