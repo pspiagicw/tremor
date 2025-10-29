@@ -12,16 +12,14 @@ import (
 )
 
 type Compiler struct {
-	e     *emitter.Emitter
-	tp    *typechecker.TypeChecker
-	scope *typechecker.TypeScope
+	e       *emitter.Emitter
+	typeMap typechecker.TypeMap
 }
 
-func NewCompiler(tp *typechecker.TypeChecker, scope *typechecker.TypeScope) *Compiler {
+func NewCompiler(typeMap typechecker.TypeMap) *Compiler {
 	return &Compiler{
-		e:     emitter.NewEmitter(),
-		tp:    tp,
-		scope: scope,
+		e:       emitter.NewEmitter(),
+		typeMap: typeMap,
 	}
 }
 
@@ -67,7 +65,7 @@ func (c *Compiler) compileFloat(node *ast.FloatExpression) {
 }
 func (c *Compiler) compileBinary(node *ast.BinaryExpression) {
 	operator := node.Operator.Type
-	nodeType := c.tp.TypeCheck(node, c.scope)
+	nodeType := c.typeMap[node]
 
 	c.Compile(node.Left)
 	c.Compile(node.Right)

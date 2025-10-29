@@ -280,7 +280,7 @@ func testCompiler(t *testing.T, input string, expected []code.Instruction) {
 	_ = tc.TypeCheck(ast, scope)
 	assert.Empty(t, tc.Errors(), "Type Checker has errors!")
 
-	cmp := NewCompiler(tc, scope)
+	cmp := NewCompiler(tc.Map())
 	cmp.Compile(ast)
 
 	bytecode := cmp.Bytecode()

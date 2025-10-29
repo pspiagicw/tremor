@@ -20,9 +20,9 @@ func main() {
 	program := os.Args[1]
 
 	code := readFile(program)
-	AST, tc, scope := parseFile(code)
+	AST, typeMap := parseFile(code)
 
-	c := compiler.NewCompiler(tc, scope)
+	c := compiler.NewCompiler(typeMap)
 	c.Compile(AST)
 
 	bytecode := c.Bytecode()
@@ -45,7 +45,7 @@ func readFile(program string) string {
 	return string(content)
 }
 
-func parseFile(code string) (ast.Node, *typechecker.TypeChecker, *typechecker.TypeScope) {
+func parseFile(code string) (ast.Node, typechecker.TypeMap) {
 	l := lexer.NewLexer(code)
 	p := parser.NewParser(l)
 
@@ -64,5 +64,5 @@ func parseFile(code string) (ast.Node, *typechecker.TypeChecker, *typechecker.Ty
 		goreland.LogFatal("Type checker has errors: %v", p.Errors())
 	}
 
-	return ast, tp, scope
+	return ast, tp.Map()
 }

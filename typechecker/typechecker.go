@@ -10,10 +10,13 @@ import (
 
 type TypeError error
 
+type TypeMap map[ast.Node]*types.Type
+
 type TypeChecker struct {
 	errors    []TypeError
 	variables map[string]*types.Type
 	info      []string
+	typeMap   TypeMap
 }
 
 func NewTypeChecker() *TypeChecker {
@@ -21,47 +24,57 @@ func NewTypeChecker() *TypeChecker {
 		variables: map[string]*types.Type{},
 		errors:    []TypeError{},
 		info:      []string{},
+		typeMap:   make(map[ast.Node]*types.Type),
 	}
 
 	return t
 }
 
+func (t *TypeChecker) Map() TypeMap {
+	return t.typeMap
+}
+
 func (t *TypeChecker) TypeCheck(node ast.Node, scope *TypeScope) *types.Type {
+	nodeType := types.UnknownType
 	switch node := node.(type) {
 	case *ast.AST:
-		return t.typeAST(node, scope)
+		nodeType = t.typeAST(node, scope)
 	case *ast.BlockStatement:
-		return t.typeBlockStatement(node, scope)
+		nodeType = t.typeBlockStatement(node, scope)
 	case *ast.ExpressionStatement:
-		return t.TypeCheck(node.Inside, scope)
+		nodeType = t.TypeCheck(node.Inside, scope)
 	case *ast.IntegerExpression:
-		return types.IntType
+		nodeType = types.IntType
 	case *ast.FloatExpression:
-		return types.FloatType
+		nodeType = types.FloatType
 	case *ast.StringExpression:
-		return types.StringType
+		nodeType = types.StringType
 	case *ast.BooleanExpression:
-		return types.BoolType
+		nodeType = types.BoolType
 	case *ast.LetStatement:
-		return t.typeLetStatement(node, scope)
+		nodeType = t.typeLetStatement(node, scope)
 	case *ast.ReturnStatement:
-		return t.typeReturnStatement(node, scope)
+		nodeType = t.typeReturnStatement(node, scope)
 	case *ast.IfStatement:
-		return t.typeIfStatement(node, scope)
+		nodeType = t.typeIfStatement(node, scope)
 	case *ast.IdentifierExpression:
-		return t.typeIdentifierExpression(node, scope)
+		nodeType = t.typeIdentifierExpression(node, scope)
 	case *ast.FunctionStatement:
-		return t.typeFunctionStatement(node, scope)
+		nodeType = t.typeFunctionStatement(node, scope)
 	case *ast.LambdaExpression:
-		return t.typeLambdaExpression(node, scope)
+		nodeType = t.typeLambdaExpression(node, scope)
 	case *ast.FunctionCallExpression:
-		return t.typeFunctionCall(node, scope)
+		nodeType = t.typeFunctionCall(node, scope)
 	case *ast.BinaryExpression:
-		return t.typeBinaryExpression(node, scope)
+		nodeType = t.typeBinaryExpression(node, scope)
 	default:
 		t.registerError("Can't check type of '%T'", node)
 		return types.UnknownType
 	}
+
+	t.typeMap[node] = nodeType
+
+	return nodeType
 }
 
 func (t *TypeChecker) typeBinaryExpression(node *ast.BinaryExpression, scope *TypeScope) *types.Type {
