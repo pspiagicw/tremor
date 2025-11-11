@@ -94,7 +94,60 @@ func (c *Compiler) compileArithmetic(node *ast.BinaryExpression) {
 		c.emitSlash(returnType)
 	}
 }
-func (c *Compiler) compileComparison(node *ast.BinaryExpression) {}
+func resolveType(left, right *types.Type) *types.Type {
+
+	if left == right {
+		return left
+	}
+
+	return types.FloatType
+}
+func (c *Compiler) compileComparison(node *ast.BinaryExpression) {
+
+	operator := node.Operator.Type
+
+	leftType := c.typeMap[node.Left]
+	rightType := c.typeMap[node.Right]
+
+	expressionType := resolveType(leftType, rightType)
+
+	c.Compile(node.Left)
+	if leftType == types.IntType && rightType == types.FloatType {
+		c.e.ToFloat()
+	}
+
+	c.Compile(node.Right)
+	if leftType == types.FloatType && rightType == types.IntType {
+		c.e.ToFloat()
+	}
+
+	switch operator {
+	case token.LT:
+		if expressionType == types.IntType {
+			c.e.LtInt()
+		} else {
+			c.e.LtFloat()
+		}
+	case token.LTE:
+		if expressionType == types.IntType {
+			c.e.LteInt()
+		} else {
+			c.e.LteFloat()
+		}
+	case token.GT:
+		if expressionType == types.IntType {
+			c.e.GtInt()
+		} else {
+			c.e.GtFloat()
+		}
+	case token.GTE:
+		if expressionType == types.IntType {
+			c.e.GteInt()
+		} else {
+			c.e.GteFloat()
+		}
+	}
+}
 
 func (c *Compiler) compileLogical(node *ast.BinaryExpression) {
 	operator := node.Operator.Type
@@ -120,6 +173,16 @@ func (c *Compiler) compileBinary(node *ast.BinaryExpression) {
 		c.compileComparison(node)
 	case token.AND, token.OR:
 		c.compileLogical(node)
+	case token.EQ:
+		// TODO: Maybe expand into separate function.
+		c.Compile(node.Left)
+		c.Compile(node.Right)
+		c.e.Eq()
+	case token.NEQ:
+		// TODO: Maybe expand into separate function.
+		c.Compile(node.Left)
+		c.Compile(node.Right)
+		c.e.Neq()
 	case token.CONCAT:
 		// TODO: Maybe expand into separate function.
 		c.Compile(node.Left)
@@ -163,8 +226,6 @@ func (c *Compiler) compileBinary(node *ast.BinaryExpression) {
 	// case token.LT:
 	// 	c.Lt(node)
 	// }
-}
-func (c *Compiler) Lt(node *ast.BinaryExpression) {
 }
 func (c *Compiler) emitSlash(nodeType *types.Type) {
 	switch nodeType {

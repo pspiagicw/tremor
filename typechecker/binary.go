@@ -45,6 +45,8 @@ func resolveArithmetic(left, right *types.Type) (*types.Type, error) {
 }
 func resolveComparison(left, right *types.Type) (*types.Type, error) {
 
+	// TODO: Add a check to confirm left and right are int or float, not anything else.
+
 	if left == right {
 		return types.BoolType, nil
 	}

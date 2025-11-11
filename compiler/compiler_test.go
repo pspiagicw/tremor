@@ -182,7 +182,6 @@ func TestBoolNot(t *testing.T) {
 // --------------------------------------------
 
 func TestCompareInts(t *testing.T) {
-	t.Skip()
 	cases := []struct {
 		input string
 		op    code.Op
@@ -208,7 +207,6 @@ func TestCompareInts(t *testing.T) {
 }
 
 func TestCompareMixed(t *testing.T) {
-	t.Skip()
 	cases := []struct {
 		input string
 		op    code.Op
@@ -234,7 +232,6 @@ func TestCompareMixed(t *testing.T) {
 }
 
 func TestCompareFloats(t *testing.T) {
-	t.Skip()
 	cases := []struct {
 		input string
 		op    code.Op
@@ -358,6 +355,8 @@ func TestGreaterEqualMixed(t *testing.T) {
 }
 
 func TestEqualityMixedNested(t *testing.T) {
+	// TODO: Decide if EQ actually considers int-to-float conversion or not. Right now it doesn't
+	t.Skip()
 	input := "(1 + 2) == 3.0"
 	expected := []code.Instruction{
 		{OpCode: code.PUSH, Args: []int{0}}, // 1
