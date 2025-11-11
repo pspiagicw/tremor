@@ -1,8 +1,9 @@
+GO_BINARY=/usr/bin/go
 build: 
-	go build .
+	${GO_BINARY} build .
 
 test:
-	go test -json ./... | tparse -all
+	${GO_BINARY} test -json ./... | tparse -all
 
 all: build test
 

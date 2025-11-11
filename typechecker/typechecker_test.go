@@ -9,6 +9,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestParenthesisExpression(t *testing.T) {
+	input := `(1 + 2) * (3 * 3)`
+
+	expected := types.IntType
+
+	testTypeChecking(t, input, expected)
+
+}
+
 func TestIntType(t *testing.T) {
 	input := `1`
 

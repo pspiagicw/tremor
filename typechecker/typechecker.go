@@ -67,6 +67,8 @@ func (t *TypeChecker) TypeCheck(node ast.Node, scope *TypeScope) *types.Type {
 		nodeType = t.typeFunctionCall(node, scope)
 	case *ast.BinaryExpression:
 		nodeType = t.typeBinaryExpression(node, scope)
+	case *ast.ParenthesisExpression:
+		nodeType = t.typeParenthesisExpression(node, scope)
 	default:
 		t.registerError("Can't check type of '%T'", node)
 		return types.UnknownType
@@ -75,6 +77,9 @@ func (t *TypeChecker) TypeCheck(node ast.Node, scope *TypeScope) *types.Type {
 	t.typeMap[node] = nodeType
 
 	return nodeType
+}
+func (t *TypeChecker) typeParenthesisExpression(node *ast.ParenthesisExpression, scope *TypeScope) *types.Type {
+	return t.TypeCheck(node.Inside, scope)
 }
 
 func (t *TypeChecker) typeBinaryExpression(node *ast.BinaryExpression, scope *TypeScope) *types.Type {
