@@ -408,7 +408,8 @@ func testCompiler(t *testing.T, input string, expected []code.Instruction) {
 	}
 
 	cmp := NewCompiler(tc.Map())
-	cmp.Compile(ast)
+	err := cmp.Compile(ast)
+	assert.Nil(t, err, "Compiler has a error!")
 
 	bytecode := cmp.Bytecode()
 

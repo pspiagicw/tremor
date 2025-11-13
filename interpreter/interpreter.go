@@ -61,10 +61,14 @@ func StartREPL() {
 		typeMap := t.Map()
 		c := compiler.NewCompiler(typeMap)
 		// TODO: Add a err value to the compiler!
-		c.Compile(ast)
-		bytecode := c.Bytecode()
-		dump.Constants(bytecode.Constants)
-		dump.Dump(bytecode.Tape)
+		err = c.Compile(ast)
+		if err != nil {
+			goreland.LogError("Compiled faced errors!: %v", err)
+		} else {
+			bytecode := c.Bytecode()
+			dump.Constants(bytecode.Constants)
+			dump.Dump(bytecode.Tape)
+		}
 	}
 
 	os.Exit(0)

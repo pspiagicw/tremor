@@ -1,10 +1,10 @@
 package compiler
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/pspiagicw/fenc/emitter"
-	"github.com/pspiagicw/goreland"
 	"github.com/pspiagicw/tremor/ast"
 	"github.com/pspiagicw/tremor/token"
 	"github.com/pspiagicw/tremor/typechecker"
@@ -23,69 +23,83 @@ func NewCompiler(typeMap typechecker.TypeMap) *Compiler {
 	}
 }
 
-func (c *Compiler) Compile(node ast.Node) {
+func (c *Compiler) Compile(node ast.Node) error {
 	switch node := node.(type) {
 	case *ast.AST:
-		c.compileAST(node)
+		return c.compileAST(node)
 	case *ast.IntegerExpression:
-		c.compileInteger(node)
+		return c.compileInteger(node)
 	case *ast.FloatExpression:
-		c.compileFloat(node)
+		return c.compileFloat(node)
 	case *ast.ExpressionStatement:
-		c.Compile(node.Inside)
+		return c.Compile(node.Inside)
 	case *ast.BinaryExpression:
-		c.compileBinary(node)
+		return c.compileBinary(node)
 	case *ast.BooleanExpression:
-		c.compileBoolean(node)
+		return c.compileBoolean(node)
 	case *ast.StringExpression:
-		c.compileString(node)
+		return c.compileString(node)
 	case *ast.ParenthesisExpression:
-		c.compileParenthesis(node)
+		return c.compileParenthesis(node)
 	case *ast.LetStatement:
-		c.compileLetStatement(node)
+		return c.compileLetStatement(node)
 	default:
-		goreland.LogFatal("Can't compile type '%v'", node)
+		return fmt.Errorf("Can't compile type: %v", node)
 	}
 }
-func (c *Compiler) compileLetStatement(node *ast.LetStatement) {
-	c.Compile(node.Value)
+func (c *Compiler) compileLetStatement(node *ast.LetStatement) error {
+	err := c.Compile(node.Value)
+	if err != nil {
+		return err
+	}
+
 	c.e.Store(node.Name.Value)
+	return nil
 
 }
-func (c *Compiler) compileParenthesis(node *ast.ParenthesisExpression) {
-	c.Compile(node.Inside)
+func (c *Compiler) compileParenthesis(node *ast.ParenthesisExpression) error {
+	return c.Compile(node.Inside)
 }
-func (c *Compiler) compileString(node *ast.StringExpression) {
+func (c *Compiler) compileString(node *ast.StringExpression) error {
 	value := node.Value
 
 	c.e.PushString(value)
+	return nil
 }
-func (c *Compiler) compileBoolean(node *ast.BooleanExpression) {
+func (c *Compiler) compileBoolean(node *ast.BooleanExpression) error {
 	value := false
 	if node.Value.Value == "true" {
 		value = true
 	}
 
 	c.e.PushBool(value)
+	return nil
 }
-func (c *Compiler) compileFloat(node *ast.FloatExpression) {
+func (c *Compiler) compileFloat(node *ast.FloatExpression) error {
 	value, err := strconv.ParseFloat(node.Value, 32)
 	if err != nil {
-		goreland.LogFatal("Error converting '%s' to float", node.Value)
+		return fmt.Errorf("Error converting '%s' to float", node.Value)
 	}
 	c.e.PushFloat(float32(value))
+	return nil
 }
 
-func (c *Compiler) compileArithmetic(node *ast.BinaryExpression) {
+func (c *Compiler) compileArithmetic(node *ast.BinaryExpression) error {
 	returnType := c.typeMap[node]
 	leftType := c.typeMap[node.Left]
 	rightType := c.typeMap[node.Right]
 
-	c.Compile(node.Left)
+	err := c.Compile(node.Left)
+	if err != nil {
+		return err
+	}
 	if leftType == types.IntType && returnType == types.FloatType {
 		c.e.ToFloat()
 	}
-	c.Compile(node.Right)
+	err = c.Compile(node.Right)
+	if err != nil {
+		return err
+	}
 	if rightType == types.IntType && returnType == types.FloatType {
 		c.e.ToFloat()
 	}
@@ -100,6 +114,8 @@ func (c *Compiler) compileArithmetic(node *ast.BinaryExpression) {
 	case token.SLASH:
 		c.emitSlash(returnType)
 	}
+
+	return nil
 }
 func resolveType(left, right *types.Type) *types.Type {
 
@@ -109,7 +125,7 @@ func resolveType(left, right *types.Type) *types.Type {
 
 	return types.FloatType
 }
-func (c *Compiler) compileComparison(node *ast.BinaryExpression) {
+func (c *Compiler) compileComparison(node *ast.BinaryExpression) error {
 
 	operator := node.Operator.Type
 
@@ -118,12 +134,18 @@ func (c *Compiler) compileComparison(node *ast.BinaryExpression) {
 
 	expressionType := resolveType(leftType, rightType)
 
-	c.Compile(node.Left)
+	err := c.Compile(node.Left)
+	if err != nil {
+		return err
+	}
 	if leftType == types.IntType && rightType == types.FloatType {
 		c.e.ToFloat()
 	}
 
-	c.Compile(node.Right)
+	err = c.Compile(node.Right)
+	if err != nil {
+		return err
+	}
 	if leftType == types.FloatType && rightType == types.IntType {
 		c.e.ToFloat()
 	}
@@ -154,13 +176,21 @@ func (c *Compiler) compileComparison(node *ast.BinaryExpression) {
 			c.e.GteFloat()
 		}
 	}
+
+	return nil
 }
 
-func (c *Compiler) compileLogical(node *ast.BinaryExpression) {
+func (c *Compiler) compileLogical(node *ast.BinaryExpression) error {
 	operator := node.Operator.Type
 
-	c.Compile(node.Left)
-	c.Compile(node.Right)
+	err := c.Compile(node.Left)
+	if err != nil {
+		return err
+	}
+	err = c.Compile(node.Right)
+	if err != nil {
+		return err
+	}
 
 	switch operator {
 	case token.AND:
@@ -168,71 +198,58 @@ func (c *Compiler) compileLogical(node *ast.BinaryExpression) {
 	case token.OR:
 		c.e.OrBool()
 	}
+
+	return nil
 }
 
-func (c *Compiler) compileBinary(node *ast.BinaryExpression) {
+func (c *Compiler) compileBinary(node *ast.BinaryExpression) error {
 	operator := node.Operator.Type
 
 	switch operator {
 	case token.PLUS, token.MINUS, token.MULTIPLY, token.SLASH:
-		c.compileArithmetic(node)
+		return c.compileArithmetic(node)
 	case token.GT, token.GTE, token.LT, token.LTE:
-		c.compileComparison(node)
+		return c.compileComparison(node)
 	case token.AND, token.OR:
-		c.compileLogical(node)
+		return c.compileLogical(node)
 	case token.EQ:
 		// TODO: Maybe expand into separate function.
-		c.Compile(node.Left)
-		c.Compile(node.Right)
+		err := c.Compile(node.Left)
+		if err != nil {
+			return err
+		}
+		err = c.Compile(node.Right)
+		if err != nil {
+			return err
+		}
 		c.e.Eq()
 	case token.NEQ:
 		// TODO: Maybe expand into separate function.
-		c.Compile(node.Left)
-		c.Compile(node.Right)
+		err := c.Compile(node.Left)
+		if err != nil {
+			return err
+		}
+		err = c.Compile(node.Right)
+		if err != nil {
+			return err
+		}
 		c.e.Neq()
 	case token.CONCAT:
 		// TODO: Maybe expand into separate function.
-		c.Compile(node.Left)
-		c.Compile(node.Right)
+		err := c.Compile(node.Left)
+		if err != nil {
+			return err
+		}
+		err = c.Compile(node.Right)
+		if err != nil {
+			return err
+		}
 		c.e.AddString()
 	default:
-		goreland.LogFatal("Can't compile binary operator: %s", operator)
+		return fmt.Errorf("Can't compile binary operator: %s", operator)
 	}
 
-	// TODO: This works for arithmetic, for comparison, the returntype is always boolean, thus can't emit proper instructions.
-	// returnType := c.typeMap[node]
-	// leftType := c.typeMap[node.Left]
-	// rightType := c.typeMap[node.Right]
-	//
-	// // TODO: If it's a arithmetic , see if int needs to be converted to float or something.
-	// // And in comparison the returnType will be boolean, you will have to compare manually.
-	// c.Compile(node.Left)
-	// if leftType == types.IntType && returnType == types.FloatType {
-	// 	c.e.ToFloat()
-	// }
-	// c.Compile(node.Right)
-	// if rightType == types.IntType && returnType == types.FloatType {
-	// 	c.e.ToFloat()
-	// }
-
-	// switch operator {
-	// case token.PLUS:
-	// 	c.emitPlus(returnType)
-	// case token.MINUS:
-	// 	c.emitMinus(returnType)
-	// case token.MULTIPLY:
-	// 	c.emitMultiply(returnType)
-	// case token.SLASH:
-	// 	c.emitSlash(returnType)
-	// case token.CONCAT:
-	// 	c.e.AddString()
-	// case token.OR:
-	// 	c.e.OrBool()
-	// case token.AND:
-	// 	c.e.AndBool()
-	// case token.LT:
-	// 	c.Lt(node)
-	// }
+	return nil
 }
 func (c *Compiler) emitSlash(nodeType *types.Type) {
 	switch nodeType {
@@ -266,17 +283,22 @@ func (c *Compiler) emitPlus(nodeType *types.Type) {
 		c.e.AddFloat()
 	}
 }
-func (c *Compiler) compileInteger(node *ast.IntegerExpression) {
+func (c *Compiler) compileInteger(node *ast.IntegerExpression) error {
 	value, err := strconv.Atoi(node.Value)
 	if err != nil {
-		goreland.LogFatal("Error converting '%s' to integer", node.Value)
+		return fmt.Errorf("Error converting '%s' to integer", node.Value)
 	}
 	c.e.PushInt(value)
+	return nil
 }
-func (c *Compiler) compileAST(node *ast.AST) {
+func (c *Compiler) compileAST(node *ast.AST) error {
 	for _, statement := range node.Statements {
-		c.Compile(statement)
+		err := c.Compile(statement)
+		if err != nil {
+			return err
+		}
 	}
+	return nil
 }
 func (c *Compiler) Bytecode() emitter.ByteCode {
 	return c.e.Bytecode()
