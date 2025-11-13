@@ -408,10 +408,34 @@ func TestIfStatement(t *testing.T) {
 	testCompiler(t, input, expected)
 }
 func TestIfElseStatement(t *testing.T) {
-	// TODO:
+
+	input := `if 5 == 1 then 5 else 1 end`
+
+	expected := []code.Instruction{
+		{OpCode: code.PUSH, Args: []int{0}}, // 00
+		{OpCode: code.PUSH, Args: []int{1}}, // 01
+		{OpCode: code.EQ},                   // 02
+
+		{OpCode: code.JUMP_FALSE, Args: []int{6}}, // 03
+
+		{OpCode: code.PUSH, Args: []int{2}}, // 04
+		{OpCode: code.JUMP, Args: []int{7}}, // 05
+
+		{OpCode: code.PUSH, Args: []int{3}}, // 06
+	}
+
+	testCompiler(t, input, expected)
 }
-func TestReturnStatement(t *testing.T) {
-	// TODO:
+func TestReturnStatementWithValue(t *testing.T) {
+
+	input := `return 1`
+
+	expected := []code.Instruction{
+		{OpCode: code.PUSH, Args: []int{0}},
+		{OpCode: code.RETURN_VALUE},
+	}
+
+	testCompiler(t, input, expected)
 }
 
 func testCompiler(t *testing.T, input string, expected []code.Instruction) {

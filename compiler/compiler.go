@@ -49,9 +49,22 @@ func (c *Compiler) Compile(node ast.Node) error {
 		return c.compileBlockStatement(node)
 	case *ast.IdentifierExpression:
 		return c.compileIdentifierExpression(node)
+	case *ast.ReturnStatement:
+		return c.compileReturnStatement(node)
 	default:
 		return fmt.Errorf("Can't compile type: %v", node)
 	}
+}
+func (c *Compiler) compileReturnStatement(node *ast.ReturnStatement) error {
+	err := c.Compile(node.Value)
+
+	if err != nil {
+		return err
+	}
+
+	c.e.ReturnValue()
+
+	return nil
 }
 func (c *Compiler) compileIdentifierExpression(node *ast.IdentifierExpression) error {
 	c.e.Load(node.Value.Value)
