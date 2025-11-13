@@ -378,8 +378,34 @@ func TestLetStatement(t *testing.T) {
 	testCompiler(t, input, expected)
 }
 
+func TestIdentifierStatement(t *testing.T) {
+	input := `let a = 1 a`
+
+	expected := []code.Instruction{
+		{OpCode: code.PUSH, Args: []int{0}},
+		{OpCode: code.STORE_GLOBAL, Args: []int{0}},
+		{OpCode: code.LOAD_GLOBAL, Args: []int{0}},
+	}
+
+	testCompiler(t, input, expected)
+}
+
 func TestIfStatement(t *testing.T) {
-	// TODO:
+	input := `if 5 == 1 then 5 end`
+
+	expected := []code.Instruction{
+		// Push condition
+		{OpCode: code.PUSH, Args: []int{0}}, // 00
+		{OpCode: code.PUSH, Args: []int{1}}, // 01
+		{OpCode: code.EQ},                   // 02
+
+		{OpCode: code.JUMP_FALSE, Args: []int{6}}, // 03
+
+		{OpCode: code.PUSH, Args: []int{2}}, // 04
+		{OpCode: code.JUMP, Args: []int{6}}, // 05
+	}
+
+	testCompiler(t, input, expected)
 }
 func TestIfElseStatement(t *testing.T) {
 	// TODO:

@@ -43,9 +43,57 @@ func (c *Compiler) Compile(node ast.Node) error {
 		return c.compileParenthesis(node)
 	case *ast.LetStatement:
 		return c.compileLetStatement(node)
+	case *ast.IfStatement:
+		return c.compileIfStatement(node)
+	case *ast.BlockStatement:
+		return c.compileBlockStatement(node)
+	case *ast.IdentifierExpression:
+		return c.compileIdentifierExpression(node)
 	default:
 		return fmt.Errorf("Can't compile type: %v", node)
 	}
+}
+func (c *Compiler) compileIdentifierExpression(node *ast.IdentifierExpression) error {
+	c.e.Load(node.Value.Value)
+
+	return nil
+}
+func (c *Compiler) compileBlockStatement(node *ast.BlockStatement) error {
+	for _, statement := range node.Statements {
+		err := c.Compile(statement)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+func (c *Compiler) compileIfStatement(node *ast.IfStatement) error {
+	var err error
+	// TODO: Change the emitter to return errors
+	c.e.If(
+		func(e *emitter.Emitter) {
+			err = c.Compile(node.Condition)
+			if err != nil {
+				return
+			}
+		},
+		func(e *emitter.Emitter) {
+			err = c.Compile(node.Consequence)
+			if err != nil {
+				return
+			}
+		},
+		func(e *emitter.Emitter) {
+			if node.Alternative != nil {
+				err = c.Compile(node.Alternative)
+				if err != nil {
+					return
+				}
+			}
+		},
+	)
+
+	return err
 }
 func (c *Compiler) compileLetStatement(node *ast.LetStatement) error {
 	err := c.Compile(node.Value)
@@ -201,6 +249,46 @@ func (c *Compiler) compileLogical(node *ast.BinaryExpression) error {
 
 	return nil
 }
+func (c *Compiler) compileEq(node *ast.BinaryExpression) error {
+	err := c.Compile(node.Left)
+	if err != nil {
+		return err
+	}
+	err = c.Compile(node.Right)
+	if err != nil {
+		return err
+	}
+	c.e.Eq()
+
+	return nil
+}
+
+func (c *Compiler) compileNeq(node *ast.BinaryExpression) error {
+	err := c.Compile(node.Left)
+	if err != nil {
+		return err
+	}
+	err = c.Compile(node.Right)
+	if err != nil {
+		return err
+	}
+	c.e.Neq()
+
+	return nil
+}
+func (c *Compiler) compileConcat(node *ast.BinaryExpression) error {
+	err := c.Compile(node.Left)
+	if err != nil {
+		return err
+	}
+	err = c.Compile(node.Right)
+	if err != nil {
+		return err
+	}
+	c.e.AddString()
+
+	return nil
+}
 
 func (c *Compiler) compileBinary(node *ast.BinaryExpression) error {
 	operator := node.Operator.Type
@@ -213,38 +301,11 @@ func (c *Compiler) compileBinary(node *ast.BinaryExpression) error {
 	case token.AND, token.OR:
 		return c.compileLogical(node)
 	case token.EQ:
-		// TODO: Maybe expand into separate function.
-		err := c.Compile(node.Left)
-		if err != nil {
-			return err
-		}
-		err = c.Compile(node.Right)
-		if err != nil {
-			return err
-		}
-		c.e.Eq()
+		return c.compileEq(node)
 	case token.NEQ:
-		// TODO: Maybe expand into separate function.
-		err := c.Compile(node.Left)
-		if err != nil {
-			return err
-		}
-		err = c.Compile(node.Right)
-		if err != nil {
-			return err
-		}
-		c.e.Neq()
+		return c.compileNeq(node)
 	case token.CONCAT:
-		// TODO: Maybe expand into separate function.
-		err := c.Compile(node.Left)
-		if err != nil {
-			return err
-		}
-		err = c.Compile(node.Right)
-		if err != nil {
-			return err
-		}
-		c.e.AddString()
+		return c.compileConcat(node)
 	default:
 		return fmt.Errorf("Can't compile binary operator: %s", operator)
 	}
