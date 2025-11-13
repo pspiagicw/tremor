@@ -7,12 +7,16 @@ import (
 	"github.com/pspiagicw/goreland"
 	"github.com/pspiagicw/tremor/ast"
 	"github.com/pspiagicw/tremor/compiler"
+	"github.com/pspiagicw/tremor/interpreter"
 	"github.com/pspiagicw/tremor/lexer"
 	"github.com/pspiagicw/tremor/parser"
 	"github.com/pspiagicw/tremor/typechecker"
 )
 
 func main() {
+	if len(os.Args) == 1 {
+		interpreter.StartREPL()
+	}
 	if len(os.Args) != 2 {
 		goreland.LogFatal("Expected 1 arguments program")
 	}

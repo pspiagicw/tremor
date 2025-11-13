@@ -166,6 +166,7 @@ func TestBoolOr(t *testing.T) {
 }
 
 func TestBoolNot(t *testing.T) {
+	// TODO: Implement prefix expression
 	t.Skip()
 	input := `not true`
 
@@ -367,6 +368,25 @@ func TestEqualityMixedNested(t *testing.T) {
 		{OpCode: code.EQ},
 	}
 	testCompiler(t, input, expected)
+}
+
+func TestLetStatement(t *testing.T) {
+	input := `let a = 1`
+	expected := []code.Instruction{
+		{OpCode: code.PUSH, Args: []int{0}}, // 1
+		{OpCode: code.STORE_GLOBAL, Args: []int{0}},
+	}
+	testCompiler(t, input, expected)
+}
+
+func TestIfStatement(t *testing.T) {
+	// TODO:
+}
+func TestIfElseStatement(t *testing.T) {
+	// TODO:
+}
+func TestReturnStatement(t *testing.T) {
+	// TODO:
 }
 
 func testCompiler(t *testing.T, input string, expected []code.Instruction) {

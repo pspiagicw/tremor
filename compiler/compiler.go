@@ -41,9 +41,16 @@ func (c *Compiler) Compile(node ast.Node) {
 		c.compileString(node)
 	case *ast.ParenthesisExpression:
 		c.compileParenthesis(node)
+	case *ast.LetStatement:
+		c.compileLetStatement(node)
 	default:
 		goreland.LogFatal("Can't compile type '%v'", node)
 	}
+}
+func (c *Compiler) compileLetStatement(node *ast.LetStatement) {
+	c.Compile(node.Value)
+	c.e.Store(node.Name.Value)
+
 }
 func (c *Compiler) compileParenthesis(node *ast.ParenthesisExpression) {
 	c.Compile(node.Inside)
