@@ -438,9 +438,55 @@ func TestReturnStatementWithValue(t *testing.T) {
 	testCompiler(t, input, expected)
 }
 
-// func TestSimpleFunction(t *testing.T) {
-// 	input := `fn hello() void then end`
-// }
+func TestSimpleFunction(t *testing.T) {
+	input := `fn hello() void then end`
+
+	expected := []code.Instruction{
+		{OpCode: code.CLOSURE, Args: []int{0, 0}},
+		{OpCode: code.STORE_GLOBAL, Args: []int{0}},
+	}
+
+	testCompiler(t, input, expected)
+}
+
+func TestFunctionWithArgs(t *testing.T) {
+	input := `fn hello() string then return "hello" end`
+
+	expected := []code.Instruction{
+		{OpCode: code.CLOSURE, Args: []int{1, 0}},
+		{OpCode: code.STORE_GLOBAL, Args: []int{0}},
+	}
+
+	testCompiler(t, input, expected)
+}
+
+func TestFunctionCall(t *testing.T) {
+	input := `fn hello() void then 5 end hello()`
+
+	expected := []code.Instruction{
+		{OpCode: code.CLOSURE, Args: []int{1, 0}},
+		{OpCode: code.STORE_GLOBAL, Args: []int{0}},
+		{OpCode: code.LOAD_GLOBAL, Args: []int{0}},
+		{OpCode: code.CALL, Args: []int{0}},
+	}
+
+	testCompiler(t, input, expected)
+}
+
+func TestFunctionCallWithArgs(t *testing.T) {
+	input := `fn add(a int, b int) int then return a + b end add(5,4)`
+
+	expected := []code.Instruction{
+		{OpCode: code.CLOSURE, Args: []int{0, 0}},
+		{OpCode: code.STORE_GLOBAL, Args: []int{0}},
+		{OpCode: code.PUSH, Args: []int{1}},
+		{OpCode: code.PUSH, Args: []int{2}},
+		{OpCode: code.LOAD_GLOBAL, Args: []int{0}},
+		{OpCode: code.CALL, Args: []int{2}},
+	}
+
+	testCompiler(t, input, expected)
+}
 
 func testCompiler(t *testing.T, input string, expected []code.Instruction) {
 	l := lexer.NewLexer(input)

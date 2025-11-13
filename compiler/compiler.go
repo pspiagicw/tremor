@@ -22,7 +22,6 @@ func NewCompiler(typeMap typechecker.TypeMap) *Compiler {
 		typeMap: typeMap,
 	}
 }
-
 func (c *Compiler) Compile(node ast.Node) error {
 	switch node := node.(type) {
 	case *ast.AST:
@@ -51,9 +50,49 @@ func (c *Compiler) Compile(node ast.Node) error {
 		return c.compileIdentifierExpression(node)
 	case *ast.ReturnStatement:
 		return c.compileReturnStatement(node)
+	case *ast.FunctionStatement:
+		return c.compileFunctionStatement(node)
+	case *ast.FunctionCallExpression:
+		return c.compileFunctionCall(node)
 	default:
 		return fmt.Errorf("Can't compile type: %v", node)
 	}
+}
+func (c *Compiler) compileFunctionCall(node *ast.FunctionCallExpression) error {
+
+	for _, arg := range node.Arguments {
+		err := c.Compile(arg)
+		if err != nil {
+			return err
+		}
+	}
+
+	// TODO: Right now function name is just a expression.
+	c.e.Load(node.Caller.String())
+
+	c.e.Call(len(node.Arguments))
+
+	return nil
+}
+
+func (c *Compiler) compileFunctionStatement(node *ast.FunctionStatement) error {
+	args := []string{}
+	for _, arg := range node.Args {
+		args = append(args, arg.Value)
+	}
+	return c.e.Function(node.Name.Value, args, func(e *emitter.Emitter) error {
+		oldEmitter := c.e
+		// New emitter for the function's sake
+		c.e = e
+		err := c.Compile(node.Body)
+		if err != nil {
+			return err
+		}
+
+		c.e = oldEmitter
+
+		return nil
+	})
 }
 func (c *Compiler) compileReturnStatement(node *ast.ReturnStatement) error {
 	err := c.Compile(node.Value)
