@@ -81,32 +81,33 @@ func (c *Compiler) compileBlockStatement(node *ast.BlockStatement) error {
 	return nil
 }
 func (c *Compiler) compileIfStatement(node *ast.IfStatement) error {
-	var err error
 	// TODO: Change the emitter to return errors
-	c.e.If(
-		func(e *emitter.Emitter) {
-			err = c.Compile(node.Condition)
+	return c.e.If(
+		func(e *emitter.Emitter) error {
+			err := c.Compile(node.Condition)
 			if err != nil {
-				return
+				return err
 			}
+			return nil
 		},
-		func(e *emitter.Emitter) {
-			err = c.Compile(node.Consequence)
+		func(e *emitter.Emitter) error {
+			err := c.Compile(node.Consequence)
 			if err != nil {
-				return
+				return err
 			}
+			return nil
 		},
-		func(e *emitter.Emitter) {
+		func(e *emitter.Emitter) error {
 			if node.Alternative != nil {
-				err = c.Compile(node.Alternative)
+				err := c.Compile(node.Alternative)
 				if err != nil {
-					return
+					return err
 				}
 			}
+			return nil
 		},
 	)
 
-	return err
 }
 func (c *Compiler) compileLetStatement(node *ast.LetStatement) error {
 	err := c.Compile(node.Value)

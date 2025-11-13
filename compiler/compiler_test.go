@@ -438,6 +438,10 @@ func TestReturnStatementWithValue(t *testing.T) {
 	testCompiler(t, input, expected)
 }
 
+// func TestSimpleFunction(t *testing.T) {
+// 	input := `fn hello() void then end`
+// }
+
 func testCompiler(t *testing.T, input string, expected []code.Instruction) {
 	l := lexer.NewLexer(input)
 	p := parser.NewParser(l)

@@ -50,6 +50,10 @@ func (t *Type) String() string {
 		return string(t.Kind)
 	}
 
+	if t.Kind == RETURN {
+		return string(t.ReturnType.Kind)
+	}
+
 	args := []string{}
 	for i := range t.Args {
 		args = append(args, t.Args[i].String())

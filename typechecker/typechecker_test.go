@@ -388,6 +388,8 @@ func TestFloatLessThanInt(t *testing.T) {
 	testTypeChecking(t, input, expected)
 }
 
+// TODO: Add test for prefix expression!
+
 func testTypeChecking(t *testing.T, input string, expected *types.Type) {
 
 	l := lexer.NewLexer(input)
