@@ -295,7 +295,6 @@ func TestStringConcatMultiline(t *testing.T) {
 	testCompiler(t, input, expected)
 }
 
-// TODO: Add float and int mixed arithmetic tests to test TO_FLOAT
 func TestAddIntFloat(t *testing.T) {
 	input := "1 + 2.5"
 	expected := []code.Instruction{

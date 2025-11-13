@@ -17,7 +17,6 @@ func (t *TypeScope) SetupBuiltinFunctions() {
 }
 
 func (t *TypeScope) Add(name string, nodetype *types.Type) error {
-	// TODO: Research into how to bifurcate this thing. Like either merge both into one map or implement more features. (Done)
 	if val, ok := t.symbolExists(name); ok {
 		return fmt.Errorf("Symbol '%s', already declared with type '%s'", name, val)
 	}

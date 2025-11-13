@@ -159,7 +159,6 @@ func (t *TypeChecker) typeFunctionStatement(node *ast.FunctionStatement, scope *
 		t.registerError("Expected return type of %s, got %s", functiontype.ReturnType, bodyType)
 		return bodyType
 	}
-	// TODO: Check for return statement and see if it matches the returntype mentioned in function header. (completed)
 
 	err := scope.Add(node.Name.Value, functiontype)
 	if err != nil {
@@ -191,7 +190,6 @@ func (t *TypeChecker) typeLambdaExpression(node *ast.LambdaExpression, scope *Ty
 		t.registerError("Expected return type of %s, got %s", functiontype.ReturnType, bodyType)
 		return bodyType
 	}
-	// TODO: Check for return statement and see if it matches the returntype mentioned in function header. (completed)
 	return functiontype
 }
 

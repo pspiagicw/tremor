@@ -60,7 +60,6 @@ func StartREPL() {
 
 		typeMap := t.Map()
 		c := compiler.NewCompiler(typeMap)
-		// TODO: Add a err value to the compiler!
 		err = c.Compile(ast)
 		if err != nil {
 			goreland.LogError("Compiled faced errors!: %v", err)

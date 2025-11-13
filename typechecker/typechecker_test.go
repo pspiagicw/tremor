@@ -134,7 +134,6 @@ func TestFunctionStatementWithFunctionArgTypes(t *testing.T) {
 	testTypeChecking(t, input, expected)
 }
 func TestFunctionStatementWithFunctionReturnTypes(t *testing.T) {
-	// TODO: Add support for lambdas to cover this.
 	input := `fn adder(x int, y int) (fn(int) int) then return fn(a int) int then return a + y end end`
 
 	expected := types.NewFunctionType(

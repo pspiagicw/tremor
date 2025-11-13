@@ -29,7 +29,7 @@ func resolveString(left, right *types.Type) (*types.Type, error) {
 	if left == types.StringType && right == types.StringType {
 		return types.StringType, nil
 	}
-	return nil, fmt.Errorf("Invalid operands for elipsis: %s, %s", left, right)
+	return types.UnknownType, fmt.Errorf("Invalid operands for elipsis: %s, %s", left, right)
 }
 func resolveArithmetic(left, right *types.Type) (*types.Type, error) {
 
@@ -41,11 +41,14 @@ func resolveArithmetic(left, right *types.Type) (*types.Type, error) {
 		return types.IntType, nil
 	}
 
-	return nil, fmt.Errorf("invalid operands for arithmetic: %s, %s", left, right)
+	return types.UnknownType, fmt.Errorf("invalid operands for arithmetic: %s, %s", left, right)
 }
 func resolveComparison(left, right *types.Type) (*types.Type, error) {
 
-	// TODO: Add a check to confirm left and right are int or float, not anything else.
+	// Confirm left and right are either int or float, nothing else.
+	if !((left == types.IntType || left == types.FloatType) && (right == types.IntType || right == types.FloatType)) && !(left == types.StringType && right == types.StringType) {
+		return types.UnknownType, fmt.Errorf("Invalid operands for comparison, expected int or float or string, got %s and %s", left, right)
+	}
 
 	if left == right {
 		return types.BoolType, nil
@@ -54,7 +57,7 @@ func resolveComparison(left, right *types.Type) (*types.Type, error) {
 	if (left == types.IntType || left == types.FloatType) && (right == types.IntType || right == types.FloatType) {
 		return types.BoolType, nil
 	}
-	return nil, fmt.Errorf("invalid operands for comparison: %s, %s", left, right)
+	return types.UnknownType, fmt.Errorf("invalid operands for comparison: %s, %s", left, right)
 }
 
 func resolveLogical(left, right *types.Type) (*types.Type, error) {
@@ -62,5 +65,5 @@ func resolveLogical(left, right *types.Type) (*types.Type, error) {
 		return types.BoolType, nil
 	}
 
-	return nil, fmt.Errorf("logical operators require bool, got %s and %s", left, right)
+	return types.UnknownType, fmt.Errorf("logical operators require bool, got %s and %s", left, right)
 }
