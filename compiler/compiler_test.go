@@ -457,6 +457,28 @@ func TestFunctionWithArgs(t *testing.T) {
 	testCompiler(t, input, expected)
 }
 
+func TestLambda(t *testing.T) {
+	input := `return fn() string then return "something" end`
+
+	expected := []code.Instruction{
+		{OpCode: code.CLOSURE, Args: []int{1, 0}},
+		{OpCode: code.RETURN_VALUE},
+	}
+
+	testCompiler(t, input, expected)
+}
+
+func TestLambdaWithArgument(t *testing.T) {
+	input := `return fn(a int, b int) int then return a + b end`
+
+	expected := []code.Instruction{
+		{OpCode: code.CLOSURE, Args: []int{0, 0}},
+		{OpCode: code.RETURN_VALUE},
+	}
+
+	testCompiler(t, input, expected)
+}
+
 func TestFunctionCall(t *testing.T) {
 	input := `fn hello() void then 5 end hello()`
 

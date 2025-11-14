@@ -54,9 +54,32 @@ func (c *Compiler) Compile(node ast.Node) error {
 		return c.compileFunctionStatement(node)
 	case *ast.FunctionCallExpression:
 		return c.compileFunctionCall(node)
+	case *ast.LambdaExpression:
+		return c.compileLambdaExpression(node)
 	default:
 		return fmt.Errorf("Can't compile type: %v", node)
 	}
+}
+func (c *Compiler) compileLambdaExpression(node *ast.LambdaExpression) error {
+	args := []string{}
+
+	for _, arg := range node.Args {
+		args = append(args, arg.Value)
+	}
+
+	return c.e.Lambda(args, func(e *emitter.Emitter) error {
+		oldEmitter := c.e
+
+		c.e = e
+		err := c.Compile(node.Body)
+		if err != nil {
+			return err
+		}
+
+		c.e = oldEmitter
+
+		return nil
+	})
 }
 func (c *Compiler) compileFunctionCall(node *ast.FunctionCallExpression) error {
 
