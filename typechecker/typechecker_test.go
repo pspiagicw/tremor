@@ -82,6 +82,8 @@ func TestLambdaExpressionWithReturnType(t *testing.T) {
 	testTypeChecking(t, input, expected)
 }
 
+// TODO: Test function with multiple return types, does all of them work ?
+
 func TestLambdaExpressionWithArgsAndReturnType(t *testing.T) {
 	input := `let a fn(int, int) int = fn(a int, b int) int then return a + b end`
 
