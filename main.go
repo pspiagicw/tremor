@@ -3,7 +3,8 @@ package main
 import (
 	"os"
 
-	"github.com/pspiagicw/fenc/convert"
+	"github.com/pspiagicw/fenc/dump"
+	"github.com/pspiagicw/fenc/vm"
 	"github.com/pspiagicw/goreland"
 	"github.com/pspiagicw/tremor/ast"
 	"github.com/pspiagicw/tremor/compiler"
@@ -30,12 +31,18 @@ func main() {
 	c.Compile(AST)
 
 	bytecode := c.Bytecode()
-	content := convert.Convert(bytecode.Tape, bytecode.Constants)
+	// content := convert.Convert(bytecode.Tape, bytecode.Constants)
 
-	err := os.WriteFile(program+".bc", content, 0644)
-	if err != nil {
-		goreland.LogFatal("Can't write to file")
-	}
+	dump.Constants(bytecode.Constants)
+	dump.Dump(bytecode.Tape)
+
+	vm := vm.NewVM(bytecode)
+	vm.Run()
+
+	// err := os.WriteFile(program+".bc", content, 0644)
+	// if err != nil {
+	// 	goreland.LogFatal("Can't write to file")
+	// }
 
 }
 
@@ -65,7 +72,7 @@ func parseFile(code string) (ast.Node, typechecker.TypeMap) {
 	_ = tp.TypeCheck(ast, scope)
 
 	if len(tp.Errors()) != 0 {
-		goreland.LogFatal("Type checker has errors: %v", p.Errors())
+		goreland.LogFatal("Type checker has errors: %v", tp.Errors())
 	}
 
 	return ast, tp.Map()

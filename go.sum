@@ -42,6 +42,10 @@ github.com/pspiagicw/fenc v0.0.0-20251113064647-9ae413fedfd2 h1:OPbqJ5IuXh1SsEid
 github.com/pspiagicw/fenc v0.0.0-20251113064647-9ae413fedfd2/go.mod h1:NU+5CyhPV3+R+YSIjXsOQLLgn0cOPSOutBb7EQdKCEE=
 github.com/pspiagicw/fenc v0.0.0-20251113074620-5748b8abad8c h1:mP+98xw8R7V0izX8rCNzZAG+3qEu7wlDwe5znBfTLbU=
 github.com/pspiagicw/fenc v0.0.0-20251113074620-5748b8abad8c/go.mod h1:NU+5CyhPV3+R+YSIjXsOQLLgn0cOPSOutBb7EQdKCEE=
+github.com/pspiagicw/fenc v0.0.0-20251116192833-0190be0121a6 h1:ZwFTmLRxkyK8+FVSzNQs2quE2Y38uRDeQep0oH2/G+8=
+github.com/pspiagicw/fenc v0.0.0-20251116192833-0190be0121a6/go.mod h1:NU+5CyhPV3+R+YSIjXsOQLLgn0cOPSOutBb7EQdKCEE=
+github.com/pspiagicw/fenc v0.0.0-20251120051438-3dbe608d746b h1:KzpMrXLFFo6k2rx5SHgNcqhr8HmSy+gGoNuBXI7NrXo=
+github.com/pspiagicw/fenc v0.0.0-20251120051438-3dbe608d746b/go.mod h1:NU+5CyhPV3+R+YSIjXsOQLLgn0cOPSOutBb7EQdKCEE=
 github.com/pspiagicw/goreland v0.1.1 h1:SMCQWvmH0txQMiBad72n3KHVF4PHs+pwzjn893wna0Q=
 github.com/pspiagicw/goreland v0.1.1/go.mod h1:w9C97TNLperGU930lN/hc2XuWUlYzPbBUW1OA1ka4DM=
 github.com/rivo/uniseg v0.4.7 h1:WUdvkW8uEhrYfLC4ZzdpI2ztxP1I582+49Oc5Mq64VQ=

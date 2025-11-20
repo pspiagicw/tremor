@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/pspiagicw/fenc/dump"
+	"github.com/pspiagicw/fenc/vm"
 	"github.com/pspiagicw/goreland"
 	"github.com/pspiagicw/tremor/compiler"
 	"github.com/pspiagicw/tremor/lexer"
@@ -18,6 +19,7 @@ import (
 func StartREPL() {
 	reader := bufio.NewReader(os.Stdin)
 	emptyScope := typechecker.NewScope()
+	emptyScope.SetupBuiltinFunctions()
 	for {
 		fmt.Print(">>> ")
 		input, err := reader.ReadString('\n')
@@ -67,6 +69,10 @@ func StartREPL() {
 			bytecode := c.Bytecode()
 			dump.Constants(bytecode.Constants)
 			dump.Dump(bytecode.Tape)
+
+			vm := vm.NewVM(bytecode)
+
+			vm.Run()
 		}
 	}
 

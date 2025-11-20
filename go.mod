@@ -3,7 +3,7 @@ module github.com/pspiagicw/tremor
 go 1.24.6
 
 require (
-	github.com/pspiagicw/fenc v0.0.0-20251113074620-5748b8abad8c
+	github.com/pspiagicw/fenc v0.0.0-20251120051438-3dbe608d746b
 	github.com/pspiagicw/goreland v0.1.1
 	github.com/stretchr/testify v1.11.0
 )
@@ -26,4 +26,8 @@ require (
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	golang.org/x/sys v0.37.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
+)
+
+replace (
+	github.com/pspiagicw/fenc => ../fenc
 )
