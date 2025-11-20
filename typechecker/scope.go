@@ -14,12 +14,14 @@ type TypeScope struct {
 
 func (t *TypeScope) SetupBuiltinFunctions() {
 	t.Add("print", types.NewFunctionType([]*types.Type{types.StringType}, types.VoidType))
-	t.Add("str", types.NewFunctionType([]*types.Type{types.IntType}, types.StringType))
+	t.Add("stri", types.NewFunctionType([]*types.Type{types.IntType}, types.StringType))
 }
 
 func (t *TypeScope) Add(name string, nodetype *types.Type) error {
 	if val, ok := t.symbolExists(name); ok {
-		return fmt.Errorf("Symbol '%s', already declared with type '%s'", name, val)
+		if val != nodetype {
+			return fmt.Errorf("Symbol '%s', already declared with type '%s'", name, val)
+		}
 	}
 	t.symbols[name] = nodetype
 	return nil

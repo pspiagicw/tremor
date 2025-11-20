@@ -6,5 +6,5 @@ let d float = 3.14
 let e float = d * 2.0
 
 let message string = "result = "
-print(message .. str(c))
+print(message .. stri(c))
 

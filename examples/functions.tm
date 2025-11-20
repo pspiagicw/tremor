@@ -3,5 +3,5 @@ fn add(a int, b int) int then
 end
 
 let result int = add(10, 32)
-print(str(result))
+print(stri(result))
 

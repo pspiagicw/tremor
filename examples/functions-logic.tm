@@ -8,5 +8,5 @@ fn max(a int, b int) int then
     return 1
 end
 
-print(str(max(10, 3)))
+print(stri(max(10, 3)))
 
