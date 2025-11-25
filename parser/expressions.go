@@ -14,6 +14,11 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 		return nil
 	}
 
+	if p.peek.Type == token.ASSIGN {
+		// Exceptional case, the expression is actually a assignment statement
+		return p.parseAssignmentStatement()
+	}
+
 	// Should have a advance function automatically in it.
 	left := prefixFn()
 

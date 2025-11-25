@@ -13,6 +13,12 @@ func TestLetStatement(t *testing.T) {
 	testParser(t, input, input)
 }
 
+func TestAssignmentStatement(t *testing.T) {
+	input := `a = 1`
+
+	testParser(t, input, input)
+}
+
 func TestLetStatementWithFloat(t *testing.T) {
 	input := "let a int = 1.5"
 

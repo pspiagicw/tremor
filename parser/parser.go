@@ -13,8 +13,10 @@ type ParserError error
 type Parser struct {
 	lexer            *lexer.Lexer
 	current          *token.Token
+	peek             *token.Token
 	prefixParseFnMap map[token.TokenType]prefixParseFn
 	infixParseFnMap  map[token.TokenType]infixParseFn
+	EOF              bool
 	errors           []ParserError
 	info             []string
 }
@@ -26,6 +28,8 @@ func NewParser(l *lexer.Lexer) *Parser {
 		infixParseFnMap:  map[token.TokenType]infixParseFn{},
 		errors:           []ParserError{},
 		info:             []string{},
+		EOF:              false,
+		peek:             l.Next(),
 	}
 
 	p.registerPrefixFn(token.INTEGER, p.parseIntegerExpression)
@@ -75,13 +79,19 @@ type prefixParseFn func() ast.Expression
 type infixParseFn func(ast.Expression) ast.Expression
 
 func (p *Parser) advance() {
-	p.current = p.lexer.Next()
+	// p.current = p.lexer.Next()
+	p.current = p.peek
+	p.peek = p.lexer.Next()
+
+	if p.current.Type == token.EOF {
+		p.EOF = true
+	}
 }
 
 func (p *Parser) ParseAST() *ast.AST {
 	a := &ast.AST{}
 
-	for !p.lexer.EOF {
+	for !p.EOF {
 		statement := p.parseStatement()
 
 		if statement != nil {

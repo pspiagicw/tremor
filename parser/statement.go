@@ -209,6 +209,17 @@ func (p *Parser) parseBlockStatement() *ast.BlockStatement {
 
 	return b
 }
+func (p *Parser) parseAssignmentStatement() *ast.AssignmentStatement {
+	a := &ast.AssignmentStatement{}
+
+	a.Name = p.expect(token.IDENTIFIER)
+
+	p.expect(token.ASSIGN)
+
+	a.Value = p.parseExpression(LOWEST)
+
+	return a
+}
 func (p *Parser) expect(tokentype token.TokenType) *token.Token {
 	current := p.current
 	if current.Type != tokentype {

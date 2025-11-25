@@ -67,6 +67,18 @@ func (l *LetStatement) String() string {
 	return strings.Join(elements, " ")
 }
 
+type AssignmentStatement struct {
+	Name  *token.Token
+	Value Expression
+}
+
+func (a *AssignmentStatement) expressionNode() {}
+func (a *AssignmentStatement) String() string {
+	elements := []string{a.Name.Value, "=", a.Value.String()}
+
+	return strings.Join(elements, " ")
+}
+
 type IntegerExpression struct {
 	Value string
 }

@@ -2,10 +2,8 @@
 fn max(a int, b int) int then
     if a > b then
         return a
-    else
-        return b
     end
-    return 1
+    return b
 end
 
 print(stri(max(10, 3)))
