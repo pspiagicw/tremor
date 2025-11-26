@@ -13,18 +13,20 @@ type TypeError error
 type TypeMap map[ast.Node]*types.Type
 
 type TypeChecker struct {
-	errors    []TypeError
-	variables map[string]*types.Type
-	info      []string
-	typeMap   TypeMap
+	errors  []TypeError
+	info    []string
+	typeMap TypeMap
+}
+
+func (t *TypeChecker) Flush() {
+	t.errors = []TypeError{}
 }
 
 func NewTypeChecker() *TypeChecker {
 	t := &TypeChecker{
-		variables: map[string]*types.Type{},
-		errors:    []TypeError{},
-		info:      []string{},
-		typeMap:   make(map[ast.Node]*types.Type),
+		errors:  []TypeError{},
+		info:    []string{},
+		typeMap: make(map[ast.Node]*types.Type),
 	}
 
 	return t

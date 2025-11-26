@@ -1,4 +1,4 @@
-package interpreter
+package repl
 
 import (
 	"bufio"
@@ -17,16 +17,15 @@ import (
 )
 
 func StartREPL() {
-	reader := bufio.NewReader(os.Stdin)
 	emptyScope := typechecker.NewScope()
 	emptyScope.SetupBuiltinFunctions()
+	t := typechecker.NewTypeChecker()
+	typeMap := t.Map()
+	c := compiler.NewCompiler(typeMap)
+
 	for {
-		fmt.Print(">>> ")
-		input, err := reader.ReadString('\n')
-		if err != nil {
-			goreland.LogFatal("Error reading input: %v", err)
-		}
-		value := strings.TrimSpace(input)
+
+		value := getLine()
 
 		l := lexer.NewLexer(value)
 		p := parser.NewParser(l)
@@ -41,7 +40,6 @@ func StartREPL() {
 		}
 
 		fmt.Printf("AST: %s\n", ast.String())
-		t := typechecker.NewTypeChecker()
 
 		valueType := t.TypeCheck(ast, emptyScope)
 
@@ -50,6 +48,8 @@ func StartREPL() {
 			for i, err := range t.Errors() {
 				goreland.LogError("ERROR %d: %s", i, err)
 			}
+			// Reset typechecker messages.
+			t.Flush()
 			continue
 		}
 
@@ -60,21 +60,37 @@ func StartREPL() {
 
 		fmt.Printf("TYPE: %s\n", valueType)
 
-		typeMap := t.Map()
-		c := compiler.NewCompiler(typeMap)
-		err = c.Compile(ast)
+		tm := t.Map()
+		c.SetTypeMap(tm)
+		err := c.Compile(ast)
+
 		if err != nil {
 			goreland.LogError("Compiled faced errors!: %v", err)
-		} else {
-			bytecode := c.Bytecode()
-			dump.Constants(bytecode.Constants)
-			dump.Dump(bytecode.Tape)
-
-			vm := vm.NewVM(bytecode)
-
-			vm.Run()
+			continue
 		}
-	}
 
-	os.Exit(0)
+		bytecode := c.Bytecode()
+		dump.Constants(bytecode.Constants)
+		dump.Dump(bytecode.Tape)
+
+		fmt.Println("==== OUTPUT === ")
+
+		vm := vm.NewVM(bytecode)
+
+		vm.Run()
+
+		fmt.Println("---- ...... --- ")
+	}
+}
+
+func getLine() string {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Print(">>> ")
+	input, err := reader.ReadString('\n')
+	if err != nil {
+		goreland.LogFatal("Error reading input: %v", err)
+	}
+	value := strings.TrimSpace(input)
+
+	return value
 }

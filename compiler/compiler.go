@@ -16,12 +16,20 @@ type Compiler struct {
 	typeMap typechecker.TypeMap
 }
 
+func (c *Compiler) Flush(e *emitter.Emitter) {
+}
+
+func (c *Compiler) SetTypeMap(tm typechecker.TypeMap) {
+	c.typeMap = tm
+}
+
 func NewCompiler(typeMap typechecker.TypeMap) *Compiler {
 	return &Compiler{
 		e:       emitter.NewEmitter(),
 		typeMap: typeMap,
 	}
 }
+
 func (c *Compiler) Compile(node ast.Node) error {
 	switch node := node.(type) {
 	case *ast.AST:
