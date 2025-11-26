@@ -177,7 +177,7 @@ func TestReturnStatement(t *testing.T) {
 func TestIfStatement(t *testing.T) {
 	input := `let a bool = true if a then end`
 
-	expected := types.BoolType
+	expected := types.VoidType
 
 	testTypeChecking(t, input, expected)
 }

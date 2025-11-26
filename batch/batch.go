@@ -1,6 +1,7 @@
 package batch
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/pspiagicw/fenc/dump"
@@ -54,7 +55,11 @@ func parseFile(code string) (ast.Node, typechecker.TypeMap) {
 	_ = tp.TypeCheck(ast, scope)
 
 	if len(tp.Errors()) != 0 {
-		goreland.LogFatal("Type checker has errors: %v", tp.Errors())
+		goreland.LogError("Type checker has errors")
+		for _, err := range tp.Errors() {
+			fmt.Printf("ERROR: %s\n", err)
+		}
+		goreland.LogFatal("")
 	}
 
 	return ast, tp.Map()

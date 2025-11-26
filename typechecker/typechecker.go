@@ -176,6 +176,14 @@ func (t *TypeChecker) typeFunctionStatement(node *ast.FunctionStatement, scope *
 
 	bodyType := t.TypeCheck(node.Body, newScope)
 
+	if bodyType.Kind == types.RETURN {
+		if bodyType.AlwaysReturns == false {
+			t.registerError("Expected to always return, it doesn't.")
+			return types.UnknownType
+		}
+		bodyType = bodyType.ReturnType
+	}
+
 	if !reflect.DeepEqual(bodyType, functiontype.ReturnType) {
 		t.registerError("Expected return type of %s, got %s", functiontype.ReturnType, bodyType)
 		return bodyType
@@ -206,6 +214,14 @@ func (t *TypeChecker) typeLambdaExpression(node *ast.LambdaExpression, scope *Ty
 	}
 
 	bodyType := t.TypeCheck(node.Body, newScope)
+
+	if bodyType.Kind == types.RETURN {
+		if bodyType.AlwaysReturns == false {
+			t.registerError("Expected to always return, it doesn't.")
+			return types.UnknownType
+		}
+		bodyType = bodyType.ReturnType
+	}
 
 	if bodyType != functiontype.ReturnType {
 		t.registerError("Expected return type of %s, got %s", functiontype.ReturnType, bodyType)
@@ -240,15 +256,35 @@ func (t *TypeChecker) typeIfStatement(node *ast.IfStatement, scope *TypeScope) *
 		return types.UnknownType
 	}
 
+	var alttype *types.Type = nil
 	if node.Alternative != nil {
-		altype := t.TypeCheck(node.Alternative, scope)
+		alttype = t.TypeCheck(node.Alternative, scope)
 
-		if altype == types.UnknownType {
+		if alttype == types.UnknownType {
 			return types.UnknownType
 		}
 	}
 
-	return condtype
+	if alttype != nil {
+		// Both consequence and alternative are present
+		if constype.Kind != alttype.Kind {
+			t.registerError("Type of consequence different from alternative, %s and %s", constype.Kind, alttype.Kind)
+			return types.UnknownType
+		}
+
+		if constype.Kind == types.RETURN {
+			newReturnType := &types.Type{Kind: types.RETURN}
+			newReturnType.AlwaysReturns = constype.AlwaysReturns && alttype.AlwaysReturns
+			newReturnType.ReturnType = constype.ReturnType
+
+			return newReturnType
+		}
+
+		return constype
+	}
+
+	// Conditional returns are not a thing.
+	return types.VoidType
 }
 func (t *TypeChecker) typeReturnStatement(node *ast.ReturnStatement, scope *TypeScope) *types.Type {
 	valuetype := t.TypeCheck(node.Value, scope)
@@ -259,6 +295,7 @@ func (t *TypeChecker) typeReturnStatement(node *ast.ReturnStatement, scope *Type
 
 	rt := &types.Type{Kind: types.RETURN}
 	rt.ReturnType = valuetype
+	rt.AlwaysReturns = true
 
 	return rt
 }
@@ -297,12 +334,17 @@ func (t *TypeChecker) typeAST(node *ast.AST, scope *TypeScope) *types.Type {
 
 func (t *TypeChecker) typeBlockStatement(node *ast.BlockStatement, scope *TypeScope) *types.Type {
 	for _, statement := range node.Statements {
-		bodytype := t.TypeCheck(statement, scope)
-		if bodytype.Kind == types.RETURN {
-			return bodytype.ReturnType
-		} else if bodytype == types.UnknownType {
-			return bodytype
+
+		statementType := t.TypeCheck(statement, scope)
+
+		if statementType == types.UnknownType {
+			return statementType
 		}
+
+		if statementType.AlwaysReturns && statementType.Kind == types.RETURN {
+			return statementType
+		}
+
 	}
 	return types.VoidType
 }

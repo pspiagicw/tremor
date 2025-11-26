@@ -5,9 +5,10 @@ import "strings"
 type TypeKind string
 
 type Type struct {
-	Kind       TypeKind
-	Args       []*Type
-	ReturnType *Type
+	Kind          TypeKind
+	Args          []*Type
+	ReturnType    *Type
+	AlwaysReturns bool // Only used to typecheck block-statements
 }
 
 var (
