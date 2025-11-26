@@ -395,3 +395,24 @@ func (l *LambdaExpression) String() string {
 
 	return strings.Join(elements, " ")
 }
+
+type ArrayExpression struct {
+	Elements []Expression
+}
+
+func (a *ArrayExpression) TypeInfo() string {
+	return "array-expression"
+}
+
+func (a *ArrayExpression) expressionNode() {}
+func (a *ArrayExpression) String() string {
+	args := []string{}
+
+	for _, arg := range a.Elements {
+		args = append(args, arg.String())
+	}
+
+	elements := []string{"[", strings.Join(args, ", "), "]"}
+
+	return strings.Join(elements, "")
+}

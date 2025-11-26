@@ -172,6 +172,23 @@ func TestMultilineCommentBetweenCode(t *testing.T) {
 	testToken(t, input, expected)
 }
 
+func TestArray(t *testing.T) {
+	input := `[1,2,3]`
+
+	expected := []token.Token{
+		{Type: token.LSQUARE, Value: "["},
+		{Type: token.INTEGER, Value: "1"},
+		{Type: token.COMMA, Value: ","},
+		{Type: token.INTEGER, Value: "2"},
+		{Type: token.COMMA, Value: ","},
+		{Type: token.INTEGER, Value: "3"},
+		{Type: token.RSQUARE, Value: "]"},
+		{Type: token.EOF, Value: ""},
+	}
+
+	testToken(t, input, expected)
+}
+
 func TestTypes(t *testing.T) {
 	input := `int float string bool void`
 

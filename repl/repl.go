@@ -3,10 +3,10 @@ package repl
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
-	"github.com/pspiagicw/fenc/dump"
 	"github.com/pspiagicw/fenc/vm"
 	"github.com/pspiagicw/goreland"
 	"github.com/pspiagicw/tremor/compiler"
@@ -33,8 +33,8 @@ func StartREPL() {
 
 		if len(p.Errors()) != 0 {
 			goreland.LogError("Parser has errors!")
-			for i, err := range p.Errors() {
-				goreland.LogError("ERROR %d: %s", i, err)
+			for _, err := range p.Errors() {
+				log.Printf("ERROR: %s\n", err)
 			}
 			continue
 		}
@@ -45,8 +45,8 @@ func StartREPL() {
 
 		if len(t.Errors()) != 0 {
 			goreland.LogError("Typechecker has errors!")
-			for i, err := range t.Errors() {
-				goreland.LogError("ERROR %d: %s", i, err)
+			for _, err := range t.Errors() {
+				log.Printf("ERROR: %s", err)
 			}
 			// Reset typechecker messages.
 			t.Flush()
@@ -54,7 +54,7 @@ func StartREPL() {
 		}
 
 		if valueType == types.UnknownType {
-			goreland.LogError("Typecheck failed!")
+			log.Println("Typecheck failed!")
 			continue
 		}
 
@@ -65,21 +65,23 @@ func StartREPL() {
 		err := c.Compile(ast)
 
 		if err != nil {
-			goreland.LogError("Compiled faced errors!: %v", err)
+			log.Printf("Compiled faced errors!: %v", err)
 			continue
 		}
 
 		bytecode := c.Bytecode()
-		dump.Constants(bytecode.Constants)
-		dump.Dump(bytecode.Tape)
+		// dump.Constants(bytecode.Constants)
+		// dump.Dump(bytecode.Tape)
 
-		fmt.Println("==== OUTPUT === ")
+		// fmt.Println("==== OUTPUT === ")
 
 		vm := vm.NewVM(bytecode)
 
 		vm.Run()
 
-		fmt.Println("---- ...... --- ")
+		fmt.Println(vm.Peek())
+
+		// fmt.Println("---- ...... --- ")
 	}
 }
 
@@ -88,7 +90,7 @@ func getLine() string {
 	fmt.Print(">>> ")
 	input, err := reader.ReadString('\n')
 	if err != nil {
-		goreland.LogFatal("Error reading input: %v", err)
+		log.Fatalf("Error reading input: %v", err)
 	}
 	value := strings.TrimSpace(input)
 

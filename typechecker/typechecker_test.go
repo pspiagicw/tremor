@@ -505,6 +505,22 @@ func TestReturnAfterIf(t *testing.T) {
 	testTypeChecking(t, input, expected)
 }
 
+func TestArrayExpressionEmpty(t *testing.T) {
+	input := `[]`
+
+	expected := types.VoidType
+
+	testTypeChecking(t, input, expected)
+}
+
+func TestArrayExpressionInteger(t *testing.T) {
+	input := `[1,2,3]`
+
+	expected := &types.Type{Kind: types.ARRAY, ReturnType: types.IntType}
+
+	testTypeChecking(t, input, expected)
+}
+
 func testTypeChecking(t *testing.T, input string, expected *types.Type) {
 
 	l := lexer.NewLexer(input)

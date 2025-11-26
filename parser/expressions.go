@@ -159,6 +159,8 @@ func (p *Parser) parseFunctionCallExpression(left ast.Expression) ast.Expression
 		}
 	}
 
+	// TODO: There should be a expect right here right ?
+	// TODO: Check all parse functions.
 	p.advance()
 
 	return f
@@ -231,4 +233,29 @@ func (p *Parser) parseLambdaExpression() ast.Expression {
 
 	return l
 
+}
+
+func (p *Parser) parseArrayExpression() ast.Expression {
+	p.advance() // Move ahead the [
+
+	a := &ast.ArrayExpression{
+		Elements: []ast.Expression{},
+	}
+
+	for p.current.Type != token.RSQUARE {
+		element := p.parseExpression(LOWEST)
+		a.Elements = append(a.Elements, element)
+		if p.current.Type == token.RSQUARE {
+			break
+		} else if p.current.Type == token.COMMA {
+			p.advance()
+		} else {
+			// TODO: Add a different message
+			p.registerError(FAILED_FUNCTION_MESSAGE, p.current.Type)
+		}
+	}
+
+	p.expect(token.RSQUARE)
+
+	return a
 }

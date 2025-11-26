@@ -76,6 +76,8 @@ func (t *TypeChecker) TypeCheck(node ast.Node, scope *TypeScope) *types.Type {
 		nodeType = t.typeAssignmentExpression(node, scope)
 	case *ast.PrefixExpression:
 		nodeType = t.typePrefixExpression(node, scope)
+	case *ast.ArrayExpression:
+		nodeType = t.typeArrayExpression(node, scope)
 	default:
 		t.registerError("Can't check type of '%T'", node)
 		return types.UnknownType
@@ -84,6 +86,45 @@ func (t *TypeChecker) TypeCheck(node ast.Node, scope *TypeScope) *types.Type {
 	t.typeMap[node] = nodeType
 
 	return nodeType
+}
+func (t *TypeChecker) typeArrayExpression(node *ast.ArrayExpression, scope *TypeScope) *types.Type {
+	// TODO: Check this once.
+	arrType := &types.Type{Kind: types.ARRAY}
+
+	if len(node.Elements) == 0 {
+		return types.VoidType
+	}
+
+	expectedType := t.TypeCheck(node.Elements[0], scope)
+	if expectedType == types.UnknownType {
+		return types.UnknownType
+	}
+
+	if expectedType == types.VoidType {
+		t.registerError("Expected some concrete type, got void")
+		return types.UnknownType
+	}
+
+	for _, element := range node.Elements[1:] {
+		elementType := t.TypeCheck(element, scope)
+		if elementType == types.UnknownType {
+			return types.UnknownType
+		}
+
+		if elementType == types.VoidType {
+			t.registerError("Expected some concrete type, got void")
+			return types.UnknownType
+		}
+
+		if elementType != expectedType {
+			t.registerError("Elements of array not of same type, got %s, expected %s", elementType, expectedType)
+			return types.UnknownType
+		}
+	}
+
+	arrType.ReturnType = expectedType
+
+	return arrType
 }
 func (t *TypeChecker) typePrefixExpression(node *ast.PrefixExpression, scope *TypeScope) *types.Type {
 	nodeType := t.TypeCheck(node.Right, scope)

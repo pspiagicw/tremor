@@ -1,6 +1,9 @@
 package types
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 type TypeKind string
 
@@ -29,6 +32,8 @@ const (
 	BOOL     TypeKind = "bool"
 	FUNCTION TypeKind = "function"
 
+	ARRAY TypeKind = "array"
+
 	VOID TypeKind = "void"
 	AUTO TypeKind = "auto"
 
@@ -53,6 +58,10 @@ func (t *Type) String() string {
 
 	if t.Kind == RETURN {
 		return string(t.ReturnType.Kind)
+	}
+
+	if t.Kind == ARRAY {
+		return fmt.Sprintf("array[%s]", t.ReturnType.String())
 	}
 
 	args := []string{}
