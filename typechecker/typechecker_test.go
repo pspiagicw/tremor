@@ -400,6 +400,99 @@ func TestFloatLessThanInt(t *testing.T) {
 
 // TODO: Add test for prefix expression!
 
+// Tests for return flow analysis
+func TestIfWithoutReturn(t *testing.T) {
+	input := `
+        let a bool = true 
+        if a then 
+            1 
+        end
+    `
+	expected := types.VoidType
+	testTypeChecking(t, input, expected)
+}
+
+func TestIfWithReturnInBothBranches(t *testing.T) {
+	input := `
+        let a bool = true
+        if a then
+            return 1
+        else
+            return 2
+        end
+    `
+	expected := &types.Type{Kind: types.RETURN, ReturnType: types.IntType}
+	testTypeChecking(t, input, expected)
+}
+
+func TestIfMissingElseReturn(t *testing.T) {
+	input := `
+        let a bool = true
+        if a then
+            return 1
+        end
+    `
+	// not guaranteed to return → function returns void
+	expected := types.VoidType
+	testTypeChecking(t, input, expected)
+}
+
+func TestFunctionGuaranteedReturn(t *testing.T) {
+	input := `
+        fn add(a int, b int) int then
+            return a + b
+        end
+    `
+	expected := &types.Type{Kind: types.FUNCTION, ReturnType: types.IntType}
+	testTypeChecking(t, input, expected)
+}
+
+func TestIfElseMixedReturnAndVoid(t *testing.T) {
+	// TODO: Maybe implement some kind of should fail construct.
+	t.Skip()
+	input := `
+        let a bool = true
+        if a then
+            return 10
+        else
+            let x = 5   -- no return here
+        end
+    `
+	// NOT guaranteed to return
+	expected := types.VoidType
+	testTypeChecking(t, input, expected)
+}
+
+func TestNestedIfReturnFlow(t *testing.T) {
+	input := `
+        if true then
+            if false then
+                return 1
+            else
+                return 2
+            end
+        else
+            return 3
+        end
+    `
+	expected := &types.Type{Kind: types.RETURN, ReturnType: types.IntType}
+	testTypeChecking(t, input, expected)
+}
+
+func TestReturnAfterIf(t *testing.T) {
+	input := `
+        if true then
+            let x = 1
+        else
+            let y = 2
+        end
+
+        return 100
+    `
+	expected := &types.Type{Kind: types.RETURN, ReturnType: types.IntType}
+	testTypeChecking(t, input, expected)
+}
+
 func testTypeChecking(t *testing.T, input string, expected *types.Type) {
 
 	l := lexer.NewLexer(input)
@@ -435,5 +528,12 @@ func printParserErrors(t *testing.T, p *parser.Parser) {
 
 	errs := p.Errors()
 
-	assert.Empty(t, errs, "Parser has errors!")
+	if len(errs) != 0 {
+		t.Log("Parser has errors!\n")
+		for _, err := range errs {
+			t.Log(err)
+		}
+		t.Fail()
+	}
+
 }
