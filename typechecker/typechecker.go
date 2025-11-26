@@ -69,6 +69,8 @@ func (t *TypeChecker) TypeCheck(node ast.Node, scope *TypeScope) *types.Type {
 		nodeType = t.typeBinaryExpression(node, scope)
 	case *ast.ParenthesisExpression:
 		nodeType = t.typeParenthesisExpression(node, scope)
+	case *ast.AssignmentStatement:
+		nodeType = t.typeAssignmentExpression(node, scope)
 	default:
 		t.registerError("Can't check type of '%T'", node)
 		return types.UnknownType
@@ -77,6 +79,23 @@ func (t *TypeChecker) TypeCheck(node ast.Node, scope *TypeScope) *types.Type {
 	t.typeMap[node] = nodeType
 
 	return nodeType
+}
+func (t *TypeChecker) typeAssignmentExpression(node *ast.AssignmentStatement, scope *TypeScope) *types.Type {
+	valuetype := t.TypeCheck(node.Value, scope)
+
+	existingType := scope.Get(node.Name.Value)
+
+	if existingType == types.UnknownType {
+		t.registerError("Variable %s not declared", node.Name.Value)
+		return types.UnknownType
+	}
+
+	if valuetype != existingType {
+		t.registerError("Type of expression doesn't match type of declared variable.")
+		return types.UnknownType
+	}
+
+	return valuetype
 }
 func (t *TypeChecker) typeParenthesisExpression(node *ast.ParenthesisExpression, scope *TypeScope) *types.Type {
 	return t.TypeCheck(node.Inside, scope)

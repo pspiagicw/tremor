@@ -507,6 +507,17 @@ func TestFunctionCallWithArgs(t *testing.T) {
 	testCompiler(t, input, expected)
 }
 
+func TestAssignmentStatement(t *testing.T) {
+	input := `let a = 1 a = 2`
+	expected := []code.Instruction{
+		{OpCode: code.PUSH, Args: []int{0}}, // 1
+		{OpCode: code.STORE_GLOBAL, Args: []int{0}},
+		{OpCode: code.PUSH, Args: []int{1}},
+		{OpCode: code.STORE_GLOBAL, Args: []int{0}},
+	}
+	testCompiler(t, input, expected)
+}
+
 func testCompiler(t *testing.T, input string, expected []code.Instruction) {
 	l := lexer.NewLexer(input)
 	p := parser.NewParser(l)

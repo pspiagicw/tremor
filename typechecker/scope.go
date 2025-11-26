@@ -19,9 +19,7 @@ func (t *TypeScope) SetupBuiltinFunctions() {
 
 func (t *TypeScope) Add(name string, nodetype *types.Type) error {
 	if val, ok := t.symbolExists(name); ok {
-		if val != nodetype {
-			return fmt.Errorf("Symbol '%s', already declared with type '%s'", name, val)
-		}
+		return fmt.Errorf("Symbol '%s', already declared with type '%s'", name, val)
 	}
 	t.symbols[name] = nodetype
 	return nil

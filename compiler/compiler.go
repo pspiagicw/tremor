@@ -56,9 +56,19 @@ func (c *Compiler) Compile(node ast.Node) error {
 		return c.compileFunctionCall(node)
 	case *ast.LambdaExpression:
 		return c.compileLambdaExpression(node)
+	case *ast.AssignmentStatement:
+		return c.compileAssignmentStatement(node)
 	default:
 		return fmt.Errorf("Can't compile type: %v", node)
 	}
+}
+func (c *Compiler) compileAssignmentStatement(node *ast.AssignmentStatement) error {
+	err := c.Compile(node.Value)
+	if err != nil {
+		return err
+	}
+	c.e.Store(node.Name.Value)
+	return nil
 }
 func (c *Compiler) compileLambdaExpression(node *ast.LambdaExpression) error {
 	args := []string{}
