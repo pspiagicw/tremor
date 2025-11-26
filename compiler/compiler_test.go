@@ -436,7 +436,7 @@ func TestReturnStatementWithValue(t *testing.T) {
 }
 
 func TestSimpleFunction(t *testing.T) {
-	input := `fn hello() void then end`
+	input := `fn hello() then end`
 
 	expected := []code.Instruction{
 		{OpCode: code.CLOSURE, Args: []int{0, 0}},
@@ -480,7 +480,7 @@ func TestLambdaWithArgument(t *testing.T) {
 }
 
 func TestFunctionCall(t *testing.T) {
-	input := `fn hello() void then 5 end hello()`
+	input := `fn hello() then 5 end hello()`
 
 	expected := []code.Instruction{
 		{OpCode: code.CLOSURE, Args: []int{1, 0}},

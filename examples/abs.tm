@@ -8,4 +8,5 @@ end
 
 -- prefix expression doesn't work I think
 let result int = abs(-42)
+print(stri(result))
 

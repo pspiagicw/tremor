@@ -67,7 +67,7 @@ func (c *Compiler) Compile(node ast.Node) error {
 	case *ast.AssignmentStatement:
 		return c.compileAssignmentStatement(node)
 	default:
-		return fmt.Errorf("Can't compile type: %v", node)
+		return fmt.Errorf("Can't compile type: %v", node.TypeInfo())
 	}
 }
 func (c *Compiler) compileAssignmentStatement(node *ast.AssignmentStatement) error {
@@ -108,8 +108,7 @@ func (c *Compiler) compileFunctionCall(node *ast.FunctionCallExpression) error {
 		}
 	}
 
-	// TODO: Right now function name is just a expression.
-	c.e.Load(node.Caller.String())
+	c.Compile(node.Caller)
 
 	c.e.Call(len(node.Arguments))
 
@@ -161,7 +160,6 @@ func (c *Compiler) compileBlockStatement(node *ast.BlockStatement) error {
 	return nil
 }
 func (c *Compiler) compileIfStatement(node *ast.IfStatement) error {
-	// TODO: Change the emitter to return errors
 	return c.e.If(
 		func(e *emitter.Emitter) error {
 			err := c.Compile(node.Condition)

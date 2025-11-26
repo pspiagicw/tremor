@@ -217,7 +217,11 @@ func (p *Parser) parseLambdaExpression() ast.Expression {
 
 	p.expect(token.RPAREN)
 
-	l.ReturnType = p.parseTypeDec(false)
+	l.ReturnType = p.parseTypeDec(true)
+
+	if l.ReturnType == types.AutoType {
+		l.ReturnType = types.VoidType
+	}
 
 	p.expect(token.THEN)
 

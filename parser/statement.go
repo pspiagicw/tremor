@@ -55,7 +55,11 @@ func (p *Parser) parseFunctionStatement() *ast.FunctionStatement {
 
 	p.expect(token.RPAREN)
 
-	f.ReturnType = p.parseTypeDec(false)
+	f.ReturnType = p.parseTypeDec(true)
+
+	if f.ReturnType == types.AutoType {
+		f.ReturnType = types.VoidType
+	}
 
 	p.expect(token.THEN)
 

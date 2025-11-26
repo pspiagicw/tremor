@@ -75,7 +75,7 @@ func TestLetStatementInt(t *testing.T) {
 }
 
 func TestLambdaExpression(t *testing.T) {
-	input := `let a fn() void = fn() void then print("Hello!") end`
+	input := `let a fn() void = fn() then print("Hello!") end`
 
 	expected := types.NewFunctionType([]*types.Type{}, types.VoidType)
 
@@ -90,8 +90,6 @@ func TestLambdaExpressionWithReturnType(t *testing.T) {
 	testTypeChecking(t, input, expected)
 }
 
-// TODO: Test function with multiple return types, does all of them work ?
-
 func TestLambdaExpressionWithArgsAndReturnType(t *testing.T) {
 	input := `let a fn(int, int) int = fn(a int, b int) int then return a + b end`
 
@@ -102,7 +100,7 @@ func TestLambdaExpressionWithArgsAndReturnType(t *testing.T) {
 
 func TestFunctionStatement(t *testing.T) {
 
-	input := `fn hello() void then print("Hello, World") end`
+	input := `fn hello() then print("Hello, World") end`
 
 	expected := types.NewFunctionType([]*types.Type{}, types.VoidType)
 
@@ -397,8 +395,6 @@ func TestFloatLessThanInt(t *testing.T) {
 
 	testTypeChecking(t, input, expected)
 }
-
-// TODO: Add test for prefix expression!
 
 func TestPrefixExpressionNegation(t *testing.T) {
 	input := `-5`

@@ -2,6 +2,7 @@ package batch
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/pspiagicw/fenc/dump"
@@ -19,7 +20,11 @@ func ExecFile(filename string) {
 	AST, typeMap := parseFile(code)
 
 	c := compiler.NewCompiler(typeMap)
-	c.Compile(AST)
+	err := c.Compile(AST)
+	if err != nil {
+		log.Fatalf("ERROR: %s", err)
+
+	}
 
 	bytecode := c.Bytecode()
 

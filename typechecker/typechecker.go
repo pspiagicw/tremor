@@ -116,7 +116,7 @@ func (t *TypeChecker) typeAssignmentExpression(node *ast.AssignmentStatement, sc
 		return types.UnknownType
 	}
 
-	if valuetype != existingType {
+	if !reflect.DeepEqual(existingType, valuetype) {
 		t.registerError("Type of expression doesn't match type of declared variable.")
 		return types.UnknownType
 	}
@@ -197,6 +197,9 @@ func (t *TypeChecker) typeFunctionStatement(node *ast.FunctionStatement, scope *
 		functiontype.Args = append(functiontype.Args, argtype)
 		newScope.Add(name, argtype)
 	}
+
+	// TODO: Check if recursion in typechecker works.
+	newScope.Add(node.Name.Value, functiontype)
 
 	bodyType := t.TypeCheck(node.Body, newScope)
 

@@ -18,6 +18,7 @@ const (
 
 type Node interface {
 	String() string
+	TypeInfo() string
 }
 
 type Statement interface {
@@ -35,6 +36,9 @@ type AST struct {
 }
 
 func (a *AST) statementNode() {
+}
+func (a *AST) TypeInfo() string {
+	return "ast"
 }
 
 func (a *AST) String() string {
@@ -55,6 +59,9 @@ type LetStatement struct {
 }
 
 func (l *LetStatement) statementNode() {}
+func (l *LetStatement) TypeInfo() string {
+	return "let-statement"
+}
 func (l *LetStatement) String() string {
 	elements := []string{}
 
@@ -72,6 +79,9 @@ type AssignmentStatement struct {
 	Value Expression
 }
 
+func (a *AssignmentStatement) TypeInfo() string {
+	return "assignment-statement"
+}
 func (a *AssignmentStatement) expressionNode() {}
 func (a *AssignmentStatement) String() string {
 	elements := []string{a.Name.Value, "=", a.Value.String()}
@@ -83,6 +93,9 @@ type IntegerExpression struct {
 	Value string
 }
 
+func (n *IntegerExpression) TypeInfo() string {
+	return "integer-expression"
+}
 func (n *IntegerExpression) expressionNode() {}
 func (n *IntegerExpression) String() string {
 	return n.Value
@@ -92,6 +105,9 @@ type FloatExpression struct {
 	Value string
 }
 
+func (f *FloatExpression) TypeInfo() string {
+	return "float-expression"
+}
 func (f *FloatExpression) expressionNode() {}
 func (f *FloatExpression) String() string {
 	return f.Value
@@ -104,6 +120,9 @@ type BinaryExpression struct {
 	Type     *types.Type
 }
 
+func (b *BinaryExpression) TypeInfo() string {
+	return "binary-expression"
+}
 func (b *BinaryExpression) expressionNode() {}
 func (b *BinaryExpression) String() string {
 
@@ -117,6 +136,9 @@ type StringExpression struct {
 	Type  StringType
 }
 
+func (s *StringExpression) TypeInfo() string {
+	return "string-expression"
+}
 func (s *StringExpression) expressionNode() {}
 func (s *StringExpression) String() string {
 	quote := "\""
@@ -139,6 +161,9 @@ type PrefixExpression struct {
 	Operator *token.Token
 }
 
+func (p *PrefixExpression) TypeInfo() string {
+	return "prefix-expression"
+}
 func (p *PrefixExpression) expressionNode() {}
 func (p *PrefixExpression) String() string {
 	elements := []string{p.Operator.Value, p.Right.String()}
@@ -150,6 +175,9 @@ type BooleanExpression struct {
 	Value *token.Token
 }
 
+func (b *BooleanExpression) TypeInfo() string {
+	return "boolean-expression"
+}
 func (b *BooleanExpression) expressionNode() {}
 func (b *BooleanExpression) String() string {
 	return b.Value.Value
@@ -159,6 +187,9 @@ type ParenthesisExpression struct {
 	Inside Expression
 }
 
+func (p *ParenthesisExpression) TypeInfo() string {
+	return "parenthesis-expression"
+}
 func (p *ParenthesisExpression) expressionNode() {}
 func (p *ParenthesisExpression) String() string {
 	return p.Inside.String()
@@ -168,6 +199,9 @@ type IdentifierExpression struct {
 	Value *token.Token
 }
 
+func (i *IdentifierExpression) TypeInfo() string {
+	return "index-expression"
+}
 func (i *IdentifierExpression) expressionNode() {}
 func (i *IdentifierExpression) String() string {
 	return i.Value.Value
@@ -178,6 +212,9 @@ type FunctionCallExpression struct {
 	Arguments []Expression
 }
 
+func (f *FunctionCallExpression) TypeInfo() string {
+	return "function-call-expression"
+}
 func (f *FunctionCallExpression) expressionNode() {}
 func (f *FunctionCallExpression) String() string {
 
@@ -202,6 +239,9 @@ type IndexExpression struct {
 	Index  Expression
 }
 
+func (i *IndexExpression) TypeInfo() string {
+	return "index-expression"
+}
 func (i *IndexExpression) expressionNode() {}
 func (i *IndexExpression) String() string {
 	elements := []string{i.Caller.String(), "[", i.Index.String(), "]"}
@@ -214,6 +254,9 @@ type FieldExpression struct {
 	Field  Expression
 }
 
+func (f *FieldExpression) TypeInfo() string {
+	return "field-expression"
+}
 func (f *FieldExpression) expressionNode() {}
 func (f *FieldExpression) String() string {
 	elements := []string{f.Caller.String(), ".", f.Field.String()}
@@ -225,6 +268,9 @@ type BlockStatement struct {
 	Statements []Statement
 }
 
+func (b *BlockStatement) TypeInfo() string {
+	return "block-statement"
+}
 func (b *BlockStatement) statementNode() {}
 func (b *BlockStatement) String() string {
 	statementStrings := []string{}
@@ -242,6 +288,9 @@ type IfStatement struct {
 	Alternative *BlockStatement
 }
 
+func (i *IfStatement) TypeInfo() string {
+	return "if-statement"
+}
 func (i *IfStatement) statementNode() {}
 func (i *IfStatement) String() string {
 	elements := []string{"if", i.Condition.String(), "then", i.Consequence.String()}
@@ -260,6 +309,9 @@ type ExpressionStatement struct {
 	Inside Expression
 }
 
+func (e *ExpressionStatement) TypeInfo() string {
+	return "expression-statement"
+}
 func (e *ExpressionStatement) statementNode() {}
 func (e *ExpressionStatement) String() string {
 	return e.Inside.String()
@@ -269,6 +321,9 @@ type ReturnStatement struct {
 	Value Expression
 }
 
+func (r *ReturnStatement) TypeInfo() string {
+	return "return-statement"
+}
 func (r *ReturnStatement) statementNode() {}
 func (r *ReturnStatement) String() string {
 	elements := []string{"return", r.Value.String()}
@@ -284,6 +339,9 @@ type FunctionStatement struct {
 	ReturnType *types.Type
 }
 
+func (f *FunctionStatement) TypeInfo() string {
+	return "function-statement"
+}
 func (f *FunctionStatement) statementNode() {}
 func (f *FunctionStatement) String() string {
 	args := []string{}
@@ -313,6 +371,9 @@ type LambdaExpression struct {
 	ReturnType *types.Type
 }
 
+func (l *LambdaExpression) TypeInfo() string {
+	return "lambad-expression"
+}
 func (l *LambdaExpression) expressionNode() {}
 func (l *LambdaExpression) String() string {
 	args := []string{}
