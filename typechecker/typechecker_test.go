@@ -400,6 +400,22 @@ func TestFloatLessThanInt(t *testing.T) {
 
 // TODO: Add test for prefix expression!
 
+func TestPrefixExpressionNegation(t *testing.T) {
+	input := `-5`
+
+	expected := types.IntType
+
+	testTypeChecking(t, input, expected)
+}
+
+func TestPrefixExpressionNot(t *testing.T) {
+	input := `not true`
+
+	expected := types.BoolType
+
+	testTypeChecking(t, input, expected)
+}
+
 // Tests for return flow analysis
 func TestIfWithoutReturn(t *testing.T) {
 	input := `

@@ -5,6 +5,7 @@ import (
 	"reflect"
 
 	"github.com/pspiagicw/tremor/ast"
+	"github.com/pspiagicw/tremor/token"
 	"github.com/pspiagicw/tremor/types"
 )
 
@@ -73,6 +74,8 @@ func (t *TypeChecker) TypeCheck(node ast.Node, scope *TypeScope) *types.Type {
 		nodeType = t.typeParenthesisExpression(node, scope)
 	case *ast.AssignmentStatement:
 		nodeType = t.typeAssignmentExpression(node, scope)
+	case *ast.PrefixExpression:
+		nodeType = t.typePrefixExpression(node, scope)
 	default:
 		t.registerError("Can't check type of '%T'", node)
 		return types.UnknownType
@@ -81,6 +84,27 @@ func (t *TypeChecker) TypeCheck(node ast.Node, scope *TypeScope) *types.Type {
 	t.typeMap[node] = nodeType
 
 	return nodeType
+}
+func (t *TypeChecker) typePrefixExpression(node *ast.PrefixExpression, scope *TypeScope) *types.Type {
+	nodeType := t.TypeCheck(node.Right, scope)
+
+	if node.Operator.Type == token.MINUS {
+		if nodeType != types.IntType && nodeType != types.FloatType {
+			t.registerError("Expected type to be int or float, got %s", nodeType)
+			return types.UnknownType
+		}
+		return nodeType
+	}
+
+	if node.Operator.Type == token.NOT {
+		if nodeType != types.BoolType {
+			t.registerError("Expected type to be bool, got %s", nodeType)
+			return types.UnknownType
+		}
+		return nodeType
+	}
+
+	return types.VoidType
 }
 func (t *TypeChecker) typeAssignmentExpression(node *ast.AssignmentStatement, scope *TypeScope) *types.Type {
 	valuetype := t.TypeCheck(node.Value, scope)

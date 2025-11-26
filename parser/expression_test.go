@@ -793,6 +793,18 @@ func TestLambdaExpressionWithArgs(t *testing.T) {
 	testParser(t, input, input)
 }
 
+func TestPrefixExpressionNegation(t *testing.T) {
+	input := `return (- 5)`
+
+	testParser(t, input, input)
+}
+
+func TestPrefixExpressionNot(t *testing.T) {
+	input := `return (not true)`
+
+	testParser(t, input, input)
+}
+
 // TOOD: Complete this sometime.
 //	func TestPrec_MegaAll(t *testing.T) {
 //		input := `foo(1 + 2)[bar(3 ^ 2)].baz * arr[4 + 5] ^ obj.method(6 / 2)

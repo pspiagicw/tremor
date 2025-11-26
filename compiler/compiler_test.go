@@ -518,6 +518,18 @@ func TestAssignmentStatement(t *testing.T) {
 	testCompiler(t, input, expected)
 }
 
+// Test prefix expressions
+
+func TestPrefixExpressions(t *testing.T) {
+	// Add support in the emitter and VM.
+	t.Skip()
+	// input := `-5 not true`
+	//
+	// expected := []code.Instruction{
+	// 	{OpCode: code.PUSH, Args: []int{0}},
+	// }
+}
+
 func testCompiler(t *testing.T, input string, expected []code.Instruction) {
 	l := lexer.NewLexer(input)
 	p := parser.NewParser(l)
