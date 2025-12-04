@@ -811,6 +811,14 @@ func TestArrayExpression(t *testing.T) {
 	testParser(t, input, input)
 }
 
+func TestHashExpression(t *testing.T) {
+	input := `{"math": 1, "physics": 2, "something else": 3}`
+
+	testParser(t, input, input)
+}
+
+// TODO: Test array and hash indexing
+
 // TOOD: Complete this sometime.
 //	func TestPrec_MegaAll(t *testing.T) {
 //		input := `foo(1 + 2)[bar(3 ^ 2)].baz * arr[4 + 5] ^ obj.method(6 / 2)

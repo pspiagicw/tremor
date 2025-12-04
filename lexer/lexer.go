@@ -212,6 +212,8 @@ func (l *Lexer) Next() *token.Token {
 		return newToken(token.MULTIPLY, l.current)
 	case "/":
 		return newToken(token.SLASH, l.current)
+	case ":":
+		return newToken(token.COLON, l.current)
 	case "(":
 		return newToken(token.LPAREN, l.current)
 	case ")":

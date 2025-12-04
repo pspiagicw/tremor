@@ -259,3 +259,33 @@ func (p *Parser) parseArrayExpression() ast.Expression {
 
 	return a
 }
+func (p *Parser) parseHashExpression() ast.Expression {
+	p.advance() // Move over the {
+
+	a := &ast.HashExpression{
+		Keys:   []ast.Expression{},
+		Values: []ast.Expression{},
+	}
+
+	for p.current.Type != token.RBRACE {
+		key := p.parseExpression(LOWEST)
+		p.expect(token.COLON)
+		value := p.parseExpression(LOWEST)
+
+		a.Keys = append(a.Keys, key)
+		a.Values = append(a.Values, value)
+
+		if p.current.Type == token.RBRACE {
+			break
+		} else if p.current.Type == token.COMMA {
+			p.advance() // Move over the comma
+		} else {
+			// TODO: Add a better message
+			p.registerError("Expected comma, got '%s'", p.current.Type)
+		}
+	}
+
+	p.expect(token.RBRACE)
+
+	return a
+}

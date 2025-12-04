@@ -51,6 +51,18 @@ func TestLetStatementWithoutType(t *testing.T) {
 	testParser(t, input, expected)
 }
 
+func TestLetStatementWithArray(t *testing.T) {
+	input := `let a []int = [1,2,3,4]`
+
+	testParser(t, input, input)
+}
+
+func TestLetStatementWithHash(t *testing.T) {
+	input := `let a [string]int = {"something": 1}`
+
+	testParser(t, input, input)
+}
+
 func TestIfStatement(t *testing.T) {
 	input := `if true then print("true") end`
 

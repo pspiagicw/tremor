@@ -45,6 +45,7 @@ func NewParser(l *lexer.Lexer) *Parser {
 	p.registerPrefixFn(token.IDENTIFIER, p.parseIdentifierExpression)
 	p.registerPrefixFn(token.FN, p.parseLambdaExpression)
 	p.registerPrefixFn(token.LSQUARE, p.parseArrayExpression)
+	p.registerPrefixFn(token.LBRACE, p.parseHashExpression)
 
 	p.registerInfixFn(token.PLUS, p.parseBinaryExpression)
 	p.registerInfixFn(token.MINUS, p.parseBinaryExpression)

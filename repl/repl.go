@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/pspiagicw/fenc/dump"
 	"github.com/pspiagicw/fenc/vm"
 	"github.com/pspiagicw/goreland"
 	"github.com/pspiagicw/tremor/compiler"
@@ -71,7 +72,7 @@ func StartREPL() {
 
 		bytecode := c.Bytecode()
 		// dump.Constants(bytecode.Constants)
-		// dump.Dump(bytecode.Tape)
+		dump.Dump(bytecode.Tape)
 
 		// fmt.Println("==== OUTPUT === ")
 

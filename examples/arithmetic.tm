@@ -7,4 +7,3 @@ let e float = d * 2.0
 
 let message string = "result = "
 print(message .. stri(c))
-

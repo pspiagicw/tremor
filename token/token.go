@@ -19,6 +19,7 @@ const (
 	MODULUS  = "MODULUS"
 	EXPONENT = "EXPONENT"
 	COMMA    = "COMMA"
+	COLON    = "COLON"
 
 	EQ  = "EQ"
 	NEQ = "NEQ"

@@ -12,6 +12,8 @@ type Type struct {
 	Args          []*Type
 	ReturnType    *Type
 	AlwaysReturns bool // Only used to typecheck block-statements
+	KeyType       *Type
+	ValueType     *Type
 }
 
 var (
@@ -33,6 +35,7 @@ const (
 	FUNCTION TypeKind = "function"
 
 	ARRAY TypeKind = "array"
+	HASH  TypeKind = "hash"
 
 	VOID TypeKind = "void"
 	AUTO TypeKind = "auto"

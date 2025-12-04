@@ -149,6 +149,7 @@ func (t *TypeChecker) typePrefixExpression(node *ast.PrefixExpression, scope *Ty
 }
 func (t *TypeChecker) typeAssignmentExpression(node *ast.AssignmentStatement, scope *TypeScope) *types.Type {
 	valuetype := t.TypeCheck(node.Value, scope)
+	// TODO: Check if the value type is void, can't assign void to anything.
 
 	existingType := scope.Get(node.Name.Value)
 
@@ -371,6 +372,7 @@ func (t *TypeChecker) typeLetStatement(node *ast.LetStatement, scope *TypeScope)
 	valuetype := t.TypeCheck(node.Value, scope)
 
 	pretype := node.Type
+	// TODO: Check if the value is void (can't assign void to anything.)
 
 	if pretype == types.AutoType {
 		t.registerInfo("Auto-typed into %s", valuetype)

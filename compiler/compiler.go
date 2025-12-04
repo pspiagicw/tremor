@@ -66,10 +66,25 @@ func (c *Compiler) Compile(node ast.Node) error {
 		return c.compileLambdaExpression(node)
 	case *ast.AssignmentStatement:
 		return c.compileAssignmentStatement(node)
+	case *ast.ArrayExpression:
+		return c.compileArrayExpression(node)
 	default:
 		return fmt.Errorf("Can't compile type: %v", node.TypeInfo())
 	}
 }
+func (c *Compiler) compileArrayExpression(node *ast.ArrayExpression) error {
+	for _, value := range node.Elements {
+		err := c.Compile(value)
+		if err != nil {
+			return err
+		}
+
+	}
+
+	c.e.Array(len(node.Elements))
+	return nil
+}
+
 func (c *Compiler) compileAssignmentStatement(node *ast.AssignmentStatement) error {
 	err := c.Compile(node.Value)
 	if err != nil {

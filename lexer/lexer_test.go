@@ -7,7 +7,7 @@ func TestSimple(t *testing.T) {
 }
 
 func TestSymbol(t *testing.T) {
-	input := "+ - * / ! % ^ , ."
+	input := "+ - * / ! % ^ , . :"
 	expectedTokens := []token.Token{
 		{Type: token.PLUS, Value: "+"},
 		{Type: token.MINUS, Value: "-"},
@@ -18,6 +18,7 @@ func TestSymbol(t *testing.T) {
 		{Type: token.EXPONENT, Value: "^"},
 		{Type: token.COMMA, Value: ","},
 		{Type: token.DOT, Value: "."},
+		{Type: token.COLON, Value: ":"},
 		{Type: token.EOF, Value: ""},
 	}
 

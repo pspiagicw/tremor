@@ -521,6 +521,25 @@ func TestArrayExpressionInteger(t *testing.T) {
 	testTypeChecking(t, input, expected)
 }
 
+func TestHashExpressionEmpty(t *testing.T) {
+	input := `{}`
+
+	expected := types.VoidType
+
+	testTypeChecking(t, input, expected)
+}
+
+func TestHashExpression(t *testing.T) {
+
+	input := `{"some": 1, "else": 2, "something else": 3}`
+
+	expected := &types.Type{Kind: types.HASH, KeyType: types.StringType, ValueType: types.IntType}
+
+	testTypeChecking(t, input, expected)
+}
+
+// TODO: Test array and hash indexing
+
 func testTypeChecking(t *testing.T, input string, expected *types.Type) {
 
 	l := lexer.NewLexer(input)

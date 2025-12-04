@@ -416,3 +416,30 @@ func (a *ArrayExpression) String() string {
 
 	return strings.Join(elements, "")
 }
+
+type HashExpression struct {
+	Keys   []Expression
+	Values []Expression
+}
+
+func (h *HashExpression) TypeInfo() string {
+	return "hash-expression"
+}
+func (h *HashExpression) expressionNode() {}
+func (h *HashExpression) String() string {
+	// TODO: Make hash expression have string
+
+	pairs := []string{}
+
+	for i, key := range h.Keys {
+		value := h.Values[i]
+
+		combined := key.String() + ": " + value.String()
+
+		pairs = append(pairs, combined)
+	}
+
+	elements := []string{"{", strings.Join(pairs, ", "), "}"}
+
+	return strings.Join(elements, "")
+}

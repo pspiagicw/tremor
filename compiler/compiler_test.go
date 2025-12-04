@@ -530,6 +530,20 @@ func TestPrefixExpressions(t *testing.T) {
 	// }
 }
 
+func TestArrayExpression(t *testing.T) {
+	input := `[1,2,3,4]`
+
+	expected := []code.Instruction{
+		{OpCode: code.PUSH, Args: []int{0}},
+		{OpCode: code.PUSH, Args: []int{1}},
+		{OpCode: code.PUSH, Args: []int{2}},
+		{OpCode: code.PUSH, Args: []int{3}},
+		{OpCode: code.ARRAY, Args: []int{4}},
+	}
+
+	testCompiler(t, input, expected)
+}
+
 func testCompiler(t *testing.T, input string, expected []code.Instruction) {
 	l := lexer.NewLexer(input)
 	p := parser.NewParser(l)
