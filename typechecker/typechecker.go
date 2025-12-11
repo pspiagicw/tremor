@@ -78,6 +78,10 @@ func (t *TypeChecker) TypeCheck(node ast.Node, scope *TypeScope) *types.Type {
 		nodeType = t.typePrefixExpression(node, scope)
 	case *ast.ArrayExpression:
 		nodeType = t.typeArrayExpression(node, scope)
+	case *ast.HashExpression:
+		nodeType = t.typeHashExpression(node, scope)
+	case *ast.IndexExpression:
+		nodeType = t.typeIndexExpression(node, scope)
 	default:
 		t.registerError("Can't check type of '%T'", node)
 		return types.UnknownType
@@ -86,6 +90,109 @@ func (t *TypeChecker) TypeCheck(node ast.Node, scope *TypeScope) *types.Type {
 	t.typeMap[node] = nodeType
 
 	return nodeType
+}
+func (t *TypeChecker) typeArrayIndex(node *ast.IndexExpression, scope *TypeScope) *types.Type {
+	arrayType := t.TypeCheck(node.Caller, scope)
+
+	indexType := t.TypeCheck(node.Index, scope)
+
+	if indexType != types.IntType {
+		t.registerError("Can't index array with index type %s, requires int", indexType)
+		return types.UnknownType
+	}
+
+	return arrayType.KeyType
+}
+func (t *TypeChecker) typeHashAccess(node *ast.IndexExpression, scope *TypeScope) *types.Type {
+
+	hashType := t.TypeCheck(node.Caller, scope)
+
+	indexType := t.TypeCheck(node.Index, scope)
+
+	if indexType != hashType.KeyType {
+		t.registerError("Can't index hash with keyType %s, requires %s", indexType, hashType.KeyType)
+		return types.UnknownType
+	}
+
+	return hashType.ValueType
+}
+func (t *TypeChecker) typeIndexExpression(node *ast.IndexExpression, scope *TypeScope) *types.Type {
+	hostType := t.TypeCheck(node.Caller, scope)
+
+	switch hostType.Kind {
+	case types.ARRAY:
+		return t.typeArrayIndex(node, scope)
+	case types.HASH:
+		return t.typeHashAccess(node, scope)
+	default:
+		t.registerError("Can't index/access type of %s, requires array/hash", hostType)
+		return types.UnknownType
+	}
+}
+func (t *TypeChecker) typeHashExpression(node *ast.HashExpression, scope *TypeScope) *types.Type {
+	hashType := &types.Type{Kind: types.HASH}
+
+	if len(node.Keys) == 0 {
+		return types.VoidType
+	}
+
+	// TODO: Add a check that only concrete types can be keys (not arrays or hashes or custom types).
+	expectedKeyType := t.TypeCheck(node.Keys[0], scope)
+	if expectedKeyType == types.UnknownType {
+		return types.UnknownType
+	}
+
+	if expectedKeyType == types.VoidType {
+		t.registerError("Expected concrete type, got void")
+		return types.UnknownType
+	}
+
+	expectedValueType := t.TypeCheck(node.Values[0], scope)
+	if expectedValueType == types.UnknownType {
+		return types.UnknownType
+	}
+
+	if expectedValueType == types.VoidType {
+		t.registerError("Expected concrete type, got void")
+		return types.UnknownType
+	}
+
+	for i, key := range node.Keys {
+		keyType := t.TypeCheck(key, scope)
+
+		// TODO: Combine unknown and voidtype check
+		if keyType == types.UnknownType {
+			return types.UnknownType
+		}
+
+		if keyType == types.VoidType {
+			t.registerError("Expected some concrete type, got void")
+		}
+
+		if keyType != expectedKeyType {
+			t.registerError("Key of hash not of same type, got %s, expected %s", keyType, expectedKeyType)
+		}
+
+		valueType := t.TypeCheck(node.Values[i], scope)
+
+		// TODO: Combine unknown and voidtype check
+		if valueType == types.UnknownType {
+			return types.UnknownType
+		}
+
+		if valueType == types.VoidType {
+			t.registerError("Expected some concrete type, got void")
+		}
+
+		if valueType != expectedValueType {
+			t.registerError("Key of hash not of same type, got %s, expected %s", valueType, expectedValueType)
+		}
+	}
+
+	hashType.KeyType = expectedKeyType
+	hashType.ValueType = expectedValueType
+
+	return hashType
 }
 func (t *TypeChecker) typeArrayExpression(node *ast.ArrayExpression, scope *TypeScope) *types.Type {
 	// TODO: Check this once.
@@ -111,6 +218,7 @@ func (t *TypeChecker) typeArrayExpression(node *ast.ArrayExpression, scope *Type
 			return types.UnknownType
 		}
 
+		// TODO: Combine unknown and voidtype check
 		if elementType == types.VoidType {
 			t.registerError("Expected some concrete type, got void")
 			return types.UnknownType
@@ -122,7 +230,7 @@ func (t *TypeChecker) typeArrayExpression(node *ast.ArrayExpression, scope *Type
 		}
 	}
 
-	arrType.ReturnType = expectedType
+	arrType.KeyType = expectedType
 
 	return arrType
 }

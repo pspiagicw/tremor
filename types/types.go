@@ -64,7 +64,11 @@ func (t *Type) String() string {
 	}
 
 	if t.Kind == ARRAY {
-		return fmt.Sprintf("array[%s]", t.ReturnType.String())
+		return fmt.Sprintf("[]%s", t.KeyType.String())
+	}
+
+	if t.Kind == HASH {
+		return fmt.Sprintf("[%s]%s", t.KeyType.String(), t.ValueType.String())
 	}
 
 	args := []string{}

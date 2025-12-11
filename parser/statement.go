@@ -97,6 +97,8 @@ func (p *Parser) parseTypeDec(auto bool) *types.Type {
 		return p.parseFunctionTypeDec()
 	case token.LPAREN:
 		return p.parseNestedTypeDec()
+	case token.LSQUARE:
+		return p.parseComplexType()
 	default:
 		if auto {
 			p.registerInfo("Got %s, assuming 'auto' typing", p.current.Type)
@@ -106,6 +108,42 @@ func (p *Parser) parseTypeDec(auto bool) *types.Type {
 			return types.UnknownType
 		}
 	}
+}
+func (p *Parser) parseArrayType() *types.Type {
+	p.expect(token.RSQUARE)
+
+	embedType := p.parseTypeDec(false)
+
+	tp := &types.Type{Kind: types.ARRAY}
+	tp.KeyType = embedType
+
+	return tp
+}
+
+func (p *Parser) parseHashType() *types.Type {
+	keyType := p.parseTypeDec(false)
+
+	p.expect(token.RSQUARE)
+
+	valueType := p.parseTypeDec(false)
+
+	tp := &types.Type{Kind: types.HASH}
+	tp.KeyType = keyType
+	tp.ValueType = valueType
+
+	return tp
+}
+func (p *Parser) parseComplexType() *types.Type {
+	p.advance() // Advance over the [
+
+	if p.current.Type == token.RSQUARE {
+		// It's of format []
+		return p.parseArrayType()
+	} else {
+		// It's of format [<type>]<type>
+		return p.parseHashType()
+	}
+
 }
 func (p *Parser) parseNestedTypeDec() *types.Type {
 	p.advance() // Advance over the LPAREN

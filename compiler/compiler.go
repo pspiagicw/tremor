@@ -68,9 +68,51 @@ func (c *Compiler) Compile(node ast.Node) error {
 		return c.compileAssignmentStatement(node)
 	case *ast.ArrayExpression:
 		return c.compileArrayExpression(node)
+	case *ast.HashExpression:
+		return c.compileHashExpression(node)
+	case *ast.IndexExpression:
+		return c.compileIndexExpression(node)
 	default:
 		return fmt.Errorf("Can't compile type: %v", node.TypeInfo())
 	}
+}
+
+func (c *Compiler) compileIndexExpression(node *ast.IndexExpression) error {
+	err := c.Compile(node.Caller)
+	if err != nil {
+		return err
+	}
+
+	err = c.Compile(node.Index)
+	if err != nil {
+		return err
+	}
+
+	callerType := c.typeMap[node.Caller]
+
+	switch callerType.Kind {
+	case types.ARRAY:
+		c.e.Index()
+	case types.HASH:
+		c.e.Access()
+	}
+	return nil
+}
+func (c *Compiler) compileHashExpression(node *ast.HashExpression) error {
+	for i, key := range node.Keys {
+		err := c.Compile(key)
+		if err != nil {
+			return err
+		}
+
+		err = c.Compile(node.Values[i])
+		if err != nil {
+			return err
+		}
+	}
+
+	c.e.Hash(len(node.Keys))
+	return nil
 }
 func (c *Compiler) compileArrayExpression(node *ast.ArrayExpression) error {
 	for _, value := range node.Elements {

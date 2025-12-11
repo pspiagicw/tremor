@@ -544,6 +544,50 @@ func TestArrayExpression(t *testing.T) {
 	testCompiler(t, input, expected)
 }
 
+func TestHashExpression(t *testing.T) {
+	input := `{"something": 1, "something-else": 2}`
+
+	expected := []code.Instruction{
+		{OpCode: code.PUSH, Args: []int{0}},
+		{OpCode: code.PUSH, Args: []int{1}},
+		{OpCode: code.PUSH, Args: []int{2}},
+		{OpCode: code.PUSH, Args: []int{3}},
+		{OpCode: code.HASH, Args: []int{2}},
+	}
+	testCompiler(t, input, expected)
+}
+
+func TestArrayIndexing(t *testing.T) {
+	input := `[1, 2, 3, 4][0]`
+
+	expected := []code.Instruction{
+		{OpCode: code.PUSH, Args: []int{0}},
+		{OpCode: code.PUSH, Args: []int{1}},
+		{OpCode: code.PUSH, Args: []int{2}},
+		{OpCode: code.PUSH, Args: []int{3}},
+		{OpCode: code.ARRAY, Args: []int{4}},
+		{OpCode: code.PUSH, Args: []int{4}},
+		{OpCode: code.INDEX},
+	}
+
+	testCompiler(t, input, expected)
+}
+
+func TestHashAccess(t *testing.T) {
+	input := `{"something": 1, "something-else": 2}["something"]`
+
+	expected := []code.Instruction{
+		{OpCode: code.PUSH, Args: []int{0}},
+		{OpCode: code.PUSH, Args: []int{1}},
+		{OpCode: code.PUSH, Args: []int{2}},
+		{OpCode: code.PUSH, Args: []int{3}},
+		{OpCode: code.HASH, Args: []int{2}},
+		{OpCode: code.PUSH, Args: []int{4}},
+		{OpCode: code.ACCESS},
+	}
+	testCompiler(t, input, expected)
+}
+
 func testCompiler(t *testing.T, input string, expected []code.Instruction) {
 	l := lexer.NewLexer(input)
 	p := parser.NewParser(l)

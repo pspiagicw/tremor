@@ -817,6 +817,17 @@ func TestHashExpression(t *testing.T) {
 	testParser(t, input, input)
 }
 
+func TestArrayIndex(t *testing.T) {
+	input := `[1, 2, 3][0]`
+
+	testParser(t, input, input)
+}
+func TestHashAccess(t *testing.T) {
+	input := `{"something": 1, "something-else": 2}["something-else"]`
+
+	testParser(t, input, input)
+}
+
 // TODO: Test array and hash indexing
 
 // TOOD: Complete this sometime.

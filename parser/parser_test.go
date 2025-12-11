@@ -52,7 +52,7 @@ func TestLetStatementWithoutType(t *testing.T) {
 }
 
 func TestLetStatementWithArray(t *testing.T) {
-	input := `let a []int = [1,2,3,4]`
+	input := `let a []int = [1, 2, 3, 4]`
 
 	testParser(t, input, input)
 }
@@ -108,6 +108,12 @@ func TestFunctionStatementWithArgs(t *testing.T) {
 	expected := `fn hello(a int, b int) int then return (a + b) end`
 
 	testParser(t, input, expected)
+}
+
+func TestFunctionStatementWithArrayArgs(t *testing.T) {
+	input := `fn len(input []int) int then return 5 end`
+
+	testParser(t, input, input)
 }
 
 func TestFunctionStatementWithReturnType(t *testing.T) {

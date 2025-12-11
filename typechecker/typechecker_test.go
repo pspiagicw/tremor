@@ -538,6 +538,23 @@ func TestHashExpression(t *testing.T) {
 	testTypeChecking(t, input, expected)
 }
 
+func TestIndexExpression(t *testing.T) {
+
+	input := `[1, 2, 3][0]`
+
+	expected := types.IntType
+
+	testTypeChecking(t, input, expected)
+}
+
+func TestAccessExpression(t *testing.T) {
+	input := `{"something": true}["something"]`
+
+	expected := types.BoolType
+
+	testTypeChecking(t, input, expected)
+}
+
 // TODO: Test array and hash indexing
 
 func testTypeChecking(t *testing.T, input string, expected *types.Type) {
