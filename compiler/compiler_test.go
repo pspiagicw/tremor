@@ -588,6 +588,17 @@ func TestHashAccess(t *testing.T) {
 	testCompiler(t, input, expected)
 }
 
+func TestClassEmpty(t *testing.T) {
+	input := `class Something end`
+
+	expected := []code.Instruction{
+		{OpCode: code.PUSH, Args: []int{0}},
+		{OpCode: code.CLASS},
+	}
+
+	testCompiler(t, input, expected)
+}
+
 func testCompiler(t *testing.T, input string, expected []code.Instruction) {
 	l := lexer.NewLexer(input)
 	p := parser.NewParser(l)

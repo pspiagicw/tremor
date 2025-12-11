@@ -82,6 +82,8 @@ func (t *TypeChecker) TypeCheck(node ast.Node, scope *TypeScope) *types.Type {
 		nodeType = t.typeHashExpression(node, scope)
 	case *ast.IndexExpression:
 		nodeType = t.typeIndexExpression(node, scope)
+	case *ast.ClassStatement:
+		nodeType = t.typeClassStatement(node, scope)
 	default:
 		t.registerError("Can't check type of '%T'", node)
 		return types.UnknownType
@@ -90,6 +92,17 @@ func (t *TypeChecker) TypeCheck(node ast.Node, scope *TypeScope) *types.Type {
 	t.typeMap[node] = nodeType
 
 	return nodeType
+}
+func (t *TypeChecker) typeClassStatement(node *ast.ClassStatement, scope *TypeScope) *types.Type {
+	classType := &types.Type{Kind: types.CLASS}
+
+	err := scope.Add(node.Name.Value, classType)
+	if err != nil {
+		t.addError(err)
+		return types.UnknownType
+	}
+
+	return classType
 }
 func (t *TypeChecker) typeArrayIndex(node *ast.IndexExpression, scope *TypeScope) *types.Type {
 	arrayType := t.TypeCheck(node.Caller, scope)

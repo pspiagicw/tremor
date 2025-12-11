@@ -55,6 +55,7 @@ const (
 	AND   = "AND"
 	OR    = "OR"
 	THEN  = "THEN"
+	CLASS = "CLASS"
 
 	IDENTIFIER = "IDENTIFIER"
 	INTEGER    = "INTEGER"

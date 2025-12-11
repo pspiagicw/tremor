@@ -9,13 +9,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// TODO: Add test for function call, test arity etc.
+
 func TestParenthesisExpression(t *testing.T) {
 	input := `(1 + 2) * (3 * 3)`
 
 	expected := types.IntType
 
 	testTypeChecking(t, input, expected)
-
 }
 
 func TestIntType(t *testing.T) {
@@ -555,6 +556,14 @@ func TestAccessExpression(t *testing.T) {
 	testTypeChecking(t, input, expected)
 }
 
+func TestClassStatement(t *testing.T) {
+	input := `class Something end`
+
+	expected := &types.Type{Kind: types.CLASS}
+
+	testTypeChecking(t, input, expected)
+}
+
 // TODO: Test array and hash indexing
 
 func testTypeChecking(t *testing.T, input string, expected *types.Type) {
@@ -583,6 +592,7 @@ func testTypeChecking(t *testing.T, input string, expected *types.Type) {
 		}
 	}
 }
+
 func printTypeCheckerErrors(t *testing.T, typechecker *TypeChecker) {
 	errs := typechecker.Errors()
 

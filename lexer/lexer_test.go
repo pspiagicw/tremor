@@ -95,7 +95,7 @@ func TestNumbers(t *testing.T) {
 }
 
 func TestKeywords(t *testing.T) {
-	input := "if else return fn end let not and or then"
+	input := "if else return fn end let not and or then class"
 	expected := []token.Token{
 		{Type: token.IF, Value: "if"},
 		{Type: token.ELSE, Value: "else"},
@@ -107,6 +107,7 @@ func TestKeywords(t *testing.T) {
 		{Type: token.AND, Value: "and"},
 		{Type: token.OR, Value: "or"},
 		{Type: token.THEN, Value: "then"},
+		{Type: token.CLASS, Value: "class"},
 		{Type: token.EOF, Value: ""},
 	}
 	testToken(t, input, expected)

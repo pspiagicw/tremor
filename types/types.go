@@ -37,6 +37,8 @@ const (
 	ARRAY TypeKind = "array"
 	HASH  TypeKind = "hash"
 
+	CLASS TypeKind = "class"
+
 	VOID TypeKind = "void"
 	AUTO TypeKind = "auto"
 
@@ -69,6 +71,10 @@ func (t *Type) String() string {
 
 	if t.Kind == HASH {
 		return fmt.Sprintf("[%s]%s", t.KeyType.String(), t.ValueType.String())
+	}
+
+	if t.Kind == CLASS {
+		return fmt.Sprintf("class")
 	}
 
 	args := []string{}

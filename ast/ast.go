@@ -443,3 +443,32 @@ func (h *HashExpression) String() string {
 
 	return strings.Join(elements, "")
 }
+
+type ClassStatement struct {
+	Name    *token.Token
+	Methods []*FunctionStatement
+}
+
+func (c *ClassStatement) TypeInfo() string {
+	return "class-statement"
+}
+func (c *ClassStatement) statementNode() {}
+func (c *ClassStatement) String() string {
+
+	methodStrings := []string{}
+
+	for _, method := range c.Methods {
+		methodStrings = append(methodStrings, method.String())
+	}
+
+	methodCombined := strings.Join(methodStrings, " ")
+
+	var elements []string
+	if len(methodStrings) == 0 {
+		elements = []string{"class", c.Name.Value, "end"}
+	} else {
+		elements = []string{"class", c.Name.Value, methodCombined, "end"}
+	}
+
+	return strings.Join(elements, " ")
+}

@@ -134,6 +134,18 @@ func TestFunctionStatementWithFunctionReturnType(t *testing.T) {
 	testParser(t, input, input)
 }
 
+func TestClassDeclerationEmpty(t *testing.T) {
+	input := `class Something end`
+
+	testParser(t, input, input)
+}
+
+func TestClassDecleration(t *testing.T) {
+	input := `class Animal fn eat() void then print("Eat food!") end fn bark() void then print("Bark") end end`
+
+	testParser(t, input, input)
+}
+
 func testParser(t *testing.T, input string, expected string) {
 	l := lexer.NewLexer(input)
 	p := NewParser(l)

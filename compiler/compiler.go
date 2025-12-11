@@ -72,11 +72,18 @@ func (c *Compiler) Compile(node ast.Node) error {
 		return c.compileHashExpression(node)
 	case *ast.IndexExpression:
 		return c.compileIndexExpression(node)
+	case *ast.ClassStatement:
+		return c.compileClassStatement(node)
 	default:
 		return fmt.Errorf("Can't compile type: %v", node.TypeInfo())
 	}
 }
 
+func (c *Compiler) compileClassStatement(node *ast.ClassStatement) error {
+	c.e.Class(node.Name.Value)
+
+	return nil
+}
 func (c *Compiler) compileIndexExpression(node *ast.IndexExpression) error {
 	err := c.Compile(node.Caller)
 	if err != nil {

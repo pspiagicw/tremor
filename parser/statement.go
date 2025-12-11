@@ -16,6 +16,8 @@ func (p *Parser) parseStatement() ast.Statement {
 		return p.parseReturnStatement()
 	case token.FN:
 		return p.parseFunctionStatement()
+	case token.CLASS:
+		return p.parseClassStatement()
 	default:
 		statement := p.parseExpressionStatement()
 		if statement.Inside == nil {
@@ -23,6 +25,23 @@ func (p *Parser) parseStatement() ast.Statement {
 		}
 		return statement
 	}
+}
+func (p *Parser) parseClassStatement() *ast.ClassStatement {
+	p.advance()
+
+	c := &ast.ClassStatement{}
+	c.Methods = []*ast.FunctionStatement{}
+
+	c.Name = p.expect(token.IDENTIFIER)
+
+	for p.current.Type != token.EOF && p.current.Type != token.END {
+		method := p.parseFunctionStatement()
+		c.Methods = append(c.Methods, method)
+	}
+
+	p.expect(token.END)
+
+	return c
 }
 
 func (p *Parser) parseFunctionStatement() *ast.FunctionStatement {
