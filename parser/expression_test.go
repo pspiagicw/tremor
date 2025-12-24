@@ -817,6 +817,7 @@ func TestHashExpression(t *testing.T) {
 	testParser(t, input, input)
 }
 
+// DONE: Test array and hash indexing
 func TestArrayIndex(t *testing.T) {
 	input := `[1, 2, 3][0]`
 
@@ -827,8 +828,6 @@ func TestHashAccess(t *testing.T) {
 
 	testParser(t, input, input)
 }
-
-// TODO: Test array and hash indexing
 
 // TOOD: Complete this sometime.
 //	func TestPrec_MegaAll(t *testing.T) {
