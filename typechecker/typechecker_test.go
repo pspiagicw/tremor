@@ -9,8 +9,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TODO: Add test for function call, test arity etc.
-
 func TestParenthesisExpression(t *testing.T) {
 	input := `(1 + 2) * (3 * 3)`
 
@@ -563,8 +561,6 @@ func TestClassStatement(t *testing.T) {
 
 	testTypeChecking(t, input, expected)
 }
-
-// TODO: Test array and hash indexing
 
 func testTypeChecking(t *testing.T, input string, expected *types.Type) {
 

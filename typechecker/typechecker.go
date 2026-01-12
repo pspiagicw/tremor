@@ -142,6 +142,12 @@ func (t *TypeChecker) typeIndexExpression(node *ast.IndexExpression, scope *Type
 		return types.UnknownType
 	}
 }
+func isConcreteType(kind types.TypeKind) bool {
+	if kind == types.ARRAY || kind == types.HASH || kind == types.CLASS || kind == types.FUNCTION {
+		return false
+	}
+	return true
+}
 func (t *TypeChecker) typeHashExpression(node *ast.HashExpression, scope *TypeScope) *types.Type {
 	hashType := &types.Type{Kind: types.HASH}
 
@@ -149,7 +155,7 @@ func (t *TypeChecker) typeHashExpression(node *ast.HashExpression, scope *TypeSc
 		return types.VoidType
 	}
 
-	// TODO: Add a check that only concrete types can be keys (not arrays or hashes or custom types).
+	// DONE: Add a check that only concrete types can be keys (not arrays or hashes or custom types).
 	expectedKeyType := t.TypeCheck(node.Keys[0], scope)
 	if expectedKeyType == types.UnknownType {
 		return types.UnknownType
@@ -157,6 +163,11 @@ func (t *TypeChecker) typeHashExpression(node *ast.HashExpression, scope *TypeSc
 
 	if expectedKeyType == types.VoidType {
 		t.registerError("Expected concrete type, got void")
+		return types.UnknownType
+	}
+
+	if !isConcreteType(expectedKeyType.Kind) {
+		t.registerError("Expected concrete type, got %s", expectedKeyType.Kind)
 		return types.UnknownType
 	}
 
@@ -330,6 +341,7 @@ func (t *TypeChecker) typeFunctionCall(node *ast.FunctionCallExpression, scope *
 		return types.UnknownType
 	}
 
+	// DONE: Add test for function call, test arity etc.
 	if len(ftype.Args) != len(node.Arguments) {
 		t.registerError("Function needs %d arguments, got %d", len(ftype.Args), len(node.Arguments))
 		return types.UnknownType
@@ -492,8 +504,18 @@ func (t *TypeChecker) typeReturnStatement(node *ast.ReturnStatement, scope *Type
 func (t *TypeChecker) typeLetStatement(node *ast.LetStatement, scope *TypeScope) *types.Type {
 	valuetype := t.TypeCheck(node.Value, scope)
 
+	// DONE: Check if the value is void (can't assign void to anything.)
+	if valuetype == types.VoidType {
+		t.registerError("Can't assign void to value.")
+		return types.UnknownType
+	}
+
+	if valuetype == types.UnknownType {
+		t.registerError("Can't assign uknown to value.")
+		return types.UnknownType
+	}
+
 	pretype := node.Type
-	// TODO: Check if the value is void (can't assign void to anything.)
 
 	if pretype == types.AutoType {
 		t.registerInfo("Auto-typed into %s", valuetype)
