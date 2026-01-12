@@ -10,6 +10,7 @@ import (
 	"github.com/pspiagicw/fenc/dump"
 	"github.com/pspiagicw/fenc/vm"
 	"github.com/pspiagicw/goreland"
+	"github.com/pspiagicw/tremor/builtins"
 	"github.com/pspiagicw/tremor/compiler"
 	"github.com/pspiagicw/tremor/lexer"
 	"github.com/pspiagicw/tremor/parser"
@@ -76,7 +77,7 @@ func StartREPL() {
 
 		// fmt.Println("==== OUTPUT === ")
 
-		vm := vm.NewVM(bytecode)
+		vm := vm.NewVM(bytecode, builtins.GetBuiltins())
 
 		vm.Run()
 

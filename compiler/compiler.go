@@ -6,6 +6,7 @@ import (
 
 	"github.com/pspiagicw/fenc/emitter"
 	"github.com/pspiagicw/tremor/ast"
+	"github.com/pspiagicw/tremor/builtins"
 	"github.com/pspiagicw/tremor/token"
 	"github.com/pspiagicw/tremor/typechecker"
 	"github.com/pspiagicw/tremor/types"
@@ -25,7 +26,7 @@ func (c *Compiler) SetTypeMap(tm typechecker.TypeMap) {
 
 func NewCompiler(typeMap typechecker.TypeMap) *Compiler {
 	return &Compiler{
-		e:       emitter.NewEmitter(),
+		e:       emitter.NewEmitter(builtins.GetBuiltins()),
 		typeMap: typeMap,
 	}
 }

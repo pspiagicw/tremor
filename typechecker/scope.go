@@ -3,6 +3,7 @@ package typechecker
 import (
 	"fmt"
 
+	"github.com/pspiagicw/tremor/builtins"
 	"github.com/pspiagicw/tremor/types"
 )
 
@@ -13,8 +14,9 @@ type TypeScope struct {
 }
 
 func (t *TypeScope) SetupBuiltinFunctions() {
-	t.Add("print", types.NewFunctionType([]*types.Type{types.StringType}, types.VoidType))
-	t.Add("stri", types.NewFunctionType([]*types.Type{types.IntType}, types.StringType))
+	for _, builtin := range builtins.Builtins {
+		t.Add(builtin.Name, &builtin.BType)
+	}
 }
 
 func (t *TypeScope) Add(name string, nodetype *types.Type) error {

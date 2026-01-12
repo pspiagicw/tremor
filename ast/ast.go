@@ -427,7 +427,6 @@ func (h *HashExpression) TypeInfo() string {
 }
 func (h *HashExpression) expressionNode() {}
 func (h *HashExpression) String() string {
-	// TODO: Make hash expression have string
 
 	pairs := []string{}
 

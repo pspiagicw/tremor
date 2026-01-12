@@ -7,6 +7,7 @@ import (
 	"github.com/pspiagicw/fenc/dump"
 	"github.com/pspiagicw/fenc/vm"
 	"github.com/pspiagicw/tremor/ast"
+	"github.com/pspiagicw/tremor/builtins"
 	"github.com/pspiagicw/tremor/compiler"
 	"github.com/pspiagicw/tremor/lexer"
 	"github.com/pspiagicw/tremor/parser"
@@ -29,7 +30,7 @@ func ExecFile(filename string) {
 	dump.Constants(bytecode.Constants)
 	dump.Dump(bytecode.Tape)
 
-	vm := vm.NewVM(bytecode)
+	vm := vm.NewVM(bytecode, builtins.GetBuiltins())
 	vm.Run()
 }
 func readFile(program string) string {

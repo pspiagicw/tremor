@@ -1,6 +1,6 @@
 module github.com/pspiagicw/tremor
 
-go 1.24.6
+go 1.24.0
 
 require (
 	github.com/pspiagicw/fenc v0.0.0-20251120051438-3dbe608d746b
@@ -28,6 +28,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace (
-	github.com/pspiagicw/fenc => ../fenc
-)
+replace github.com/pspiagicw/fenc => ../fenc

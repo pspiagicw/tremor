@@ -20,3 +20,20 @@ func main() {
 
 	batch.ExecFile(program)
 }
+
+// Add other builtins
+
+// TODO: print
+// TODO: len
+// TODO: push
+// TODO: pop
+// TODO: sqrt
+// TODO: exp
+// TODO: min
+// TODO: min/max
+// TODO: string
+// TODO: lowercase
+// TODO: uppercase
+// TODO: count
+// TODO: type (most important)
+// TODO: exit
