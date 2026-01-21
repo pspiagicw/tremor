@@ -9,29 +9,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// Any type tests (both correct and wrong)
-func TestLetStatementWithAny(t *testing.T) {
-	input := `let a any = 3`
-
-	expected := types.UnknownType
-
-	testTypeCheckingWithoutErr(t, input, expected)
-}
-
-func TestFunctionStatementWithArgAnytype(t *testing.T) {
-	input := `fn add(a any, b any) void then end`
-
-	expected := types.NewFunctionType(
-		[]*types.Type{
-			types.AnyType,
-			types.AnyType,
-		},
-		types.VoidType,
-	)
-
-	testTypeCheckingWithoutErr(t, input, expected)
-}
-
 func TestParenthesisExpression(t *testing.T) {
 	input := `(1 + 2) * (3 * 3)`
 

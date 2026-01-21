@@ -31,20 +31,8 @@ func TestLetStatementWithType(t *testing.T) {
 	testParser(t, input, input)
 }
 
-func TestLetStatementWithAnyType(t *testing.T) {
-	input := `let d any = 1`
-
-	testParser(t, input, input)
-}
-
-func TestFunctionStatementWithAnyReturnType(t *testing.T) {
-	input := `fn hello() any then end`
-
-	testParserError(t, input, "Can't use any-type as return type.")
-}
-
 func TestLetStatementMultipleWithType(t *testing.T) {
-	input := `let a int = 1 let b string = "hello" let c bool = true let d any = "something"`
+	input := `let a int = 1 let b string = "hello" let c bool = true`
 
 	testParser(t, input, input)
 }

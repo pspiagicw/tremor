@@ -112,9 +112,6 @@ func (p *Parser) parseTypeDec(auto bool) *types.Type {
 		case "void":
 			p.advance()
 			return types.VoidType
-		case "any":
-			p.advance()
-			return types.AnyType
 		default:
 			p.advance()
 			return types.UnknownType

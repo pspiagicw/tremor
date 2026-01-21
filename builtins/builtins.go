@@ -24,6 +24,10 @@ var Builtins = []BuiltinDefinition{
 			return object.Null{}
 		},
 	},
+	{
+		Name:  "len",
+		BType: *types.NewFunctionType([]*types.Type{types.AnyType}, types.IntType),
+	},
 }
 
 func GetBuiltins() map[string]object.Builtin {
@@ -38,11 +42,12 @@ func GetBuiltins() map[string]object.Builtin {
 	return result
 }
 
-// TODO: Add dynamic types, (multiple args etc)
-// TODO: Check if arity is every checked
+// DONE: Add dynamic types (any-type)
+// TODO: Add multi-arg support (var-arg)
+// DONE: Check if arity is every checked
 // Add other builtins
 
-// TODO: print
+// DONE: print
 // TODO: len
 // TODO: push
 // TODO: pop

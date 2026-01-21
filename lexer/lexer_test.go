@@ -192,7 +192,7 @@ func TestArray(t *testing.T) {
 }
 
 func TestTypes(t *testing.T) {
-	input := `int float string bool void any`
+	input := `int float string bool void`
 
 	expected := []token.Token{
 		{Type: token.TYPE, Value: "int"},
@@ -200,7 +200,6 @@ func TestTypes(t *testing.T) {
 		{Type: token.TYPE, Value: "string"},
 		{Type: token.TYPE, Value: "bool"},
 		{Type: token.TYPE, Value: "void"},
-		{Type: token.TYPE, Value: "any"},
 	}
 
 	testToken(t, input, expected)
