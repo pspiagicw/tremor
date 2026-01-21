@@ -9,6 +9,29 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// Any type tests (both correct and wrong)
+func TestLetStatementWithAny(t *testing.T) {
+	input := `let a any = 3`
+
+	expected := types.UnknownType
+
+	testTypeCheckingWithoutErr(t, input, expected)
+}
+
+func TestFunctionStatementWithArgAnytype(t *testing.T) {
+	input := `fn add(a any, b any) void then end`
+
+	expected := types.NewFunctionType(
+		[]*types.Type{
+			types.AnyType,
+			types.AnyType,
+		},
+		types.VoidType,
+	)
+
+	testTypeCheckingWithoutErr(t, input, expected)
+}
+
 func TestParenthesisExpression(t *testing.T) {
 	input := `(1 + 2) * (3 * 3)`
 
@@ -578,6 +601,33 @@ func testTypeChecking(t *testing.T, input string, expected *types.Type) {
 	got := typechecker.TypeCheck(ast, scope)
 
 	printTypeCheckerErrors(t, typechecker)
+
+	assert.Equal(t, expected.Kind, got.Kind, "Expected correct type.")
+
+	if got.Kind == types.FUNCTION {
+		assert.Equal(t, expected.ReturnType, got.ReturnType, "Return type don't match")
+		for i := range expected.Args {
+			assert.Equal(t, expected.Args[i], got.Args[i], "Args for type don't match.")
+		}
+	}
+}
+
+func testTypeCheckingWithoutErr(t *testing.T, input string, expected *types.Type) {
+	l := lexer.NewLexer(input)
+	p := parser.NewParser(l)
+	typechecker := NewTypeChecker()
+
+	ast := p.ParseAST()
+
+	printParserErrors(t, p)
+
+	scope := NewScope()
+	scope.SetupBuiltinFunctions()
+
+	got := typechecker.TypeCheck(ast, scope)
+
+	// Ignore typechecker errors!
+	// printTypeCheckerErrors(t, typechecker)
 
 	assert.Equal(t, expected.Kind, got.Kind, "Expected correct type.")
 

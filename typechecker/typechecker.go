@@ -349,6 +349,9 @@ func (t *TypeChecker) typeFunctionCall(node *ast.FunctionCallExpression, scope *
 
 	for i, argtype := range ftype.Args {
 		actualtype := t.TypeCheck(node.Arguments[i], scope)
+		if argtype == types.AnyType {
+			continue
+		}
 		if actualtype != argtype {
 			t.registerError("[%d] Function needs argument of type %s, got %s", i, argtype, actualtype)
 			return types.UnknownType
@@ -362,6 +365,11 @@ func (t *TypeChecker) typeFunctionStatement(node *ast.FunctionStatement, scope *
 	functiontype := &types.Type{Kind: types.FUNCTION}
 
 	functiontype.ReturnType = node.ReturnType
+
+	if functiontype.ReturnType.Kind == types.ANY {
+		t.registerError("%s", "Return type can't be any!")
+		return types.UnknownType
+	}
 
 	newScope := NewEnclosedScope(scope)
 
@@ -518,7 +526,7 @@ func (t *TypeChecker) typeLetStatement(node *ast.LetStatement, scope *TypeScope)
 	pretype := node.Type
 
 	if pretype == types.AnyType {
-		t.registerError("Type can't be anytype", pretype)
+		t.registerError("%s", "Type can't be any-type")
 		return types.UnknownType
 	}
 

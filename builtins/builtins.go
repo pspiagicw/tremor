@@ -16,7 +16,7 @@ type BuiltinDefinition struct {
 var Builtins = []BuiltinDefinition{
 	{
 		Name:  "print",
-		BType: *types.NewFunctionType([]*types.Type{types.StringType}, types.VoidType),
+		BType: *types.NewFunctionType([]*types.Type{types.AnyType}, types.VoidType),
 		Impl: func(args ...object.Object) object.Object {
 			for _, o := range args {
 				fmt.Println(o.Content())
@@ -52,7 +52,7 @@ func GetBuiltins() map[string]object.Builtin {
 // TODO: min/max
 // TODO: string
 // TODO: lowercase
-// TODO: uppercase
+// TODO: uppercasecompiler
 // TODO: count
 // TODO: type (most important)
 // TODO: exit

@@ -48,6 +48,6 @@ func testParserError(t *testing.T, input string, message string) {
 	firsterr := errs[0].Error()
 
 	if firsterr != message {
-		t.Fatalf("Error message doesn't match, expected %s, got %s", message, firsterr)
+		t.Fatalf("Error message doesn't match, expected '%s', got '%s'", message, firsterr)
 	}
 }
