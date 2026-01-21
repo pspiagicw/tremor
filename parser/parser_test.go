@@ -31,8 +31,14 @@ func TestLetStatementWithType(t *testing.T) {
 	testParser(t, input, input)
 }
 
+func TestLetStatementWithAnyType(t *testing.T) {
+	input := `let d any = 1`
+
+	testParser(t, input, input)
+}
+
 func TestLetStatementMultipleWithType(t *testing.T) {
-	input := `let a int = 1 let b string = "hello" let c bool = true`
+	input := `let a int = 1 let b string = "hello" let c bool = true let d any = "something"`
 
 	testParser(t, input, input)
 }

@@ -517,6 +517,11 @@ func (t *TypeChecker) typeLetStatement(node *ast.LetStatement, scope *TypeScope)
 
 	pretype := node.Type
 
+	if pretype == types.AnyType {
+		t.registerError("Type can't be anytype", pretype)
+		return types.UnknownType
+	}
+
 	if pretype == types.AutoType {
 		t.registerInfo("Auto-typed into %s", valuetype)
 		pretype = valuetype

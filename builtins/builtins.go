@@ -38,6 +38,8 @@ func GetBuiltins() map[string]object.Builtin {
 	return result
 }
 
+// TODO: Add dynamic types, (multiple args etc)
+// TODO: Check if arity is every checked
 // Add other builtins
 
 // TODO: print

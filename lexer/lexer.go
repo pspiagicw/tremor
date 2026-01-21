@@ -179,6 +179,8 @@ func predictType(input string) token.TokenType {
 		fallthrough
 	case "string":
 		fallthrough
+	case "any":
+		fallthrough
 	case "bool":
 		return token.TYPE
 	default:
