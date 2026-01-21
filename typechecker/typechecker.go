@@ -349,9 +349,12 @@ func (t *TypeChecker) typeFunctionCall(node *ast.FunctionCallExpression, scope *
 
 	for i, argtype := range ftype.Args {
 		actualtype := t.TypeCheck(node.Arguments[i], scope)
+		// Needed to get typechecking working for builtins with any-type
 		if argtype == types.AnyType {
+			// TODO: Add sub-type checking ()
 			continue
 		}
+		// TODO: Implement better type comparison
 		if actualtype != argtype {
 			t.registerError("[%d] Function needs argument of type %s, got %s", i, argtype, actualtype)
 			return types.UnknownType
@@ -524,11 +527,6 @@ func (t *TypeChecker) typeLetStatement(node *ast.LetStatement, scope *TypeScope)
 	}
 
 	pretype := node.Type
-
-	if pretype == types.AnyType {
-		t.registerError("%s", "Type can't be any-type")
-		return types.UnknownType
-	}
 
 	if pretype == types.AutoType {
 		t.registerInfo("Auto-typed into %s", valuetype)

@@ -80,10 +80,6 @@ func (p *Parser) parseFunctionStatement() *ast.FunctionStatement {
 		f.ReturnType = types.VoidType
 	}
 
-	if f.ReturnType == types.AnyType {
-		p.registerError("Can't use any-type as return type.")
-	}
-
 	p.expect(token.THEN)
 
 	f.Body = p.parseBlockStatement()
