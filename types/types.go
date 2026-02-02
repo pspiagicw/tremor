@@ -48,6 +48,46 @@ const (
 	RETURN  TypeKind = "return"
 )
 
+// Helper function to compare any 2 type.
+func IsEqual(first, second *Type) bool {
+	if first == nil && second == nil {
+		return true
+	}
+
+	if first == nil || second == nil {
+		return false
+	}
+
+	if first.Kind != second.Kind {
+		return false
+	}
+
+	if !IsEqual(first.ReturnType, second.ReturnType) {
+		return false
+	}
+
+	if !IsEqual(first.KeyType, second.KeyType) {
+		return false
+	}
+
+	if !IsEqual(first.ValueType, second.ValueType) {
+		return false
+	}
+
+	if len(first.Args) != len(second.Args) {
+		return false
+	}
+
+	for i, farg := range first.Args {
+		sarg := second.Args[i]
+		if !IsEqual(farg, sarg) {
+			return false
+		}
+	}
+
+	return true
+}
+
 func NewFunctionType(args []*Type, ReturnType *Type) *Type {
 	t := &Type{
 		Kind:       FUNCTION,

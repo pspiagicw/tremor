@@ -355,7 +355,7 @@ SUPERTYPE:
 		if argtype.Kind == types.ANY {
 			for _, subtype := range argtype.Args {
 				// TODO: Compare the kind, not the raw type
-				if subtype == actualtype {
+				if types.IsEqual(subtype, actualtype) {
 					// continue in the outer for loop using labels
 					continue SUPERTYPE
 				}
@@ -363,8 +363,8 @@ SUPERTYPE:
 			t.registerError("Function needs argument any-type with subtype %s, got %s", actualtype, argtype)
 			return types.UnknownType
 		}
-		// TODO: Implement better type comparison
-		if actualtype != argtype {
+		// DONE: Implement better type comparison
+		if !types.IsEqual(actualtype, argtype) {
 			t.registerError("[%d] Function needs argument of type %s, got %s", i, argtype, actualtype)
 			return types.UnknownType
 		}
@@ -406,7 +406,7 @@ func (t *TypeChecker) typeFunctionStatement(node *ast.FunctionStatement, scope *
 		bodyType = bodyType.ReturnType
 	}
 
-	if !reflect.DeepEqual(bodyType, functiontype.ReturnType) {
+	if !types.IsEqual(bodyType, functiontype.ReturnType) {
 		t.registerError("Expected return type of %s, got %s", functiontype.ReturnType, bodyType)
 		return bodyType
 	}
@@ -445,7 +445,7 @@ func (t *TypeChecker) typeLambdaExpression(node *ast.LambdaExpression, scope *Ty
 		bodyType = bodyType.ReturnType
 	}
 
-	if bodyType != functiontype.ReturnType {
+	if !types.IsEqual(bodyType, functiontype.ReturnType) {
 		t.registerError("Expected return type of %s, got %s", functiontype.ReturnType, bodyType)
 		return bodyType
 	}
@@ -540,7 +540,7 @@ func (t *TypeChecker) typeLetStatement(node *ast.LetStatement, scope *TypeScope)
 	if pretype == types.AutoType {
 		t.registerInfo("Auto-typed into %s", valuetype)
 		pretype = valuetype
-	} else if !reflect.DeepEqual(valuetype, pretype) {
+	} else if !types.IsEqual(valuetype, pretype) {
 		t.registerError("Expected type of %s (pre-type), got %s", pretype.Kind, valuetype.Kind)
 		return types.UnknownType
 	}
