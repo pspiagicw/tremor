@@ -347,12 +347,21 @@ func (t *TypeChecker) typeFunctionCall(node *ast.FunctionCallExpression, scope *
 		return types.UnknownType
 	}
 
+	// Label for outer for loop
+SUPERTYPE:
 	for i, argtype := range ftype.Args {
 		actualtype := t.TypeCheck(node.Arguments[i], scope)
 		// Needed to get typechecking working for builtins with any-type
-		if argtype == types.AnyType {
-			// TODO: Add sub-type checking ()
-			continue
+		if argtype.Kind == types.ANY {
+			for _, subtype := range argtype.Args {
+				// TODO: Compare the kind, not the raw type
+				if subtype == actualtype {
+					// continue in the outer for loop using labels
+					continue SUPERTYPE
+				}
+			}
+			t.registerError("Function needs argument any-type with subtype %s, got %s", actualtype, argtype)
+			return types.UnknownType
 		}
 		// TODO: Implement better type comparison
 		if actualtype != argtype {

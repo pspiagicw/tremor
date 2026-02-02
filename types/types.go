@@ -57,6 +57,14 @@ func NewFunctionType(args []*Type, ReturnType *Type) *Type {
 
 	return t
 }
+func NewAnyType(subtypes []*Type) *Type {
+	t := &Type{
+		Kind: ANY,
+		Args: subtypes,
+	}
+
+	return t
+}
 
 func (t *Type) String() string {
 	if t.Kind == INT || t.Kind == STRING || t.Kind == FLOAT || t.Kind == VOID || t.Kind == UNKNOWN || t.Kind == BOOL || t.Kind == AUTO || t.Kind == ANY {
