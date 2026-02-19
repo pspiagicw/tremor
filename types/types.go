@@ -16,6 +16,7 @@ type Type struct {
 	ValueType     *Type
 }
 
+// TODO: Implement comlex interfaces like Sized, Printables etc.
 var (
 	IntType    = &Type{Kind: INT}
 	StringType = &Type{Kind: STRING}
@@ -24,6 +25,9 @@ var (
 	VoidType   = &Type{Kind: VOID}
 	AnyType    = &Type{Kind: ANY}
 	AutoType   = &Type{Kind: AUTO}
+
+	HashType  = &Type{Kind: HASH}
+	ArrayType = &Type{Kind: ARRAY}
 
 	UnknownType = &Type{Kind: UNKNOWN}
 )
@@ -86,6 +90,32 @@ func IsEqual(first, second *Type) bool {
 	}
 
 	return true
+}
+
+func IsSubType(supertype, subtype *Type) bool {
+	if supertype == nil && subtype == nil {
+		return true
+	}
+
+	if supertype == nil || subtype == nil {
+		return false
+	}
+
+	if supertype == ArrayType {
+		if subtype.Kind == ARRAY {
+			return true
+		}
+		return false
+	}
+
+	if supertype == HashType {
+		if subtype.Kind == HASH {
+			return true
+		}
+		return false
+	}
+
+	return IsEqual(supertype, subtype)
 }
 
 func NewFunctionType(args []*Type, ReturnType *Type) *Type {

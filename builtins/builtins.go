@@ -16,23 +16,24 @@ type BuiltinDefinition struct {
 
 var Builtins = []BuiltinDefinition{
 	{
+		// TODO: Evaluate object system, do we need string() and content() methods, do we need more methods?
 		Name:  "print",
-		BType: *types.NewFunctionType([]*types.Type{types.NewAnyType([]*types.Type{types.StringType, types.IntType})}, types.VoidType),
+		BType: *types.NewFunctionType([]*types.Type{types.NewAnyType([]*types.Type{types.StringType, types.ArrayType, types.HashType, types.BoolType, types.IntType, types.FloatType})}, types.VoidType),
 		Impl: func(args ...object.Object) object.Object {
 			for _, o := range args {
-				fmt.Println(o.Content())
+				fmt.Println(o.String())
 			}
 			return object.Null{}
 		},
 	},
 	{
 		Name:  "len",
-		BType: *types.NewFunctionType([]*types.Type{types.AnyType}, types.IntType),
+		BType: *types.NewFunctionType([]*types.Type{types.NewAnyType([]*types.Type{types.ArrayType, types.HashType, types.StringType})}, types.IntType),
 		Impl: func(args ...object.Object) object.Object {
 			arg := args[0]
 
-			// TODO: Remove after implementing sub-type checking.
-			// TODO: Implement some error object if needed (not needed if implementing sub-type checking)
+			// DONE: Remove after implementing sub-type checking.
+			// DONE: Implement some error object if needed (not needed if implementing sub-type checking)
 			switch arg := arg.(type) {
 			case object.String:
 				return object.CreateInt(len(arg.Value))

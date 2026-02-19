@@ -355,7 +355,7 @@ SUPERTYPE:
 		if argtype.Kind == types.ANY {
 			for _, subtype := range argtype.Args {
 				// TODO: Compare the kind, not the raw type
-				if types.IsEqual(subtype, actualtype) {
+				if types.IsSubType(subtype, actualtype) {
 					// continue in the outer for loop using labels
 					continue SUPERTYPE
 				}
