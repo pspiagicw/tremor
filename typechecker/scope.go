@@ -15,7 +15,8 @@ type TypeScope struct {
 
 func (t *TypeScope) SetupBuiltinFunctions() {
 	for _, builtin := range builtins.Builtins {
-		t.Add(builtin.Name, &builtin.BType)
+		functiontype := types.NewFunctionType(builtin.InputType, builtin.OutputType)
+		t.Add(builtin.Name, functiontype)
 	}
 }
 

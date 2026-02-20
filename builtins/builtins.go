@@ -9,16 +9,29 @@ import (
 )
 
 type BuiltinDefinition struct {
-	Name  string
-	BType types.Type
-	Impl  func(...object.Object) object.Object
+	Name       string
+	InputType  []*types.Type
+	OutputType *types.Type
+	Impl       func(...object.Object) object.Object
 }
 
 var Builtins = []BuiltinDefinition{
 	{
 		// TODO: Evaluate object system, do we need string() and content() methods, do we need more methods?
-		Name:  "print",
-		BType: *types.NewFunctionType([]*types.Type{types.NewAnyType([]*types.Type{types.StringType, types.ArrayType, types.HashType, types.BoolType, types.IntType, types.FloatType})}, types.VoidType),
+		Name: "print",
+		InputType: []*types.Type{
+			types.NewAnyType(
+				[]*types.Type{
+					types.StringType,
+					types.ArrayType,
+					types.BoolType,
+					types.IntType,
+					types.FloatType,
+					types.HashType,
+				},
+			),
+		},
+		OutputType: types.VoidType,
 		Impl: func(args ...object.Object) object.Object {
 			for _, o := range args {
 				fmt.Println(o.String())
@@ -27,8 +40,17 @@ var Builtins = []BuiltinDefinition{
 		},
 	},
 	{
-		Name:  "len",
-		BType: *types.NewFunctionType([]*types.Type{types.NewAnyType([]*types.Type{types.ArrayType, types.HashType, types.StringType})}, types.IntType),
+		Name: "len",
+		InputType: []*types.Type{
+			types.NewAnyType(
+				[]*types.Type{
+					types.ArrayType,
+					types.HashType,
+					types.StringType,
+				},
+			),
+		},
+		OutputType: types.IntType,
 		Impl: func(args ...object.Object) object.Object {
 			arg := args[0]
 
@@ -47,16 +69,20 @@ var Builtins = []BuiltinDefinition{
 		},
 	},
 	{
-		Name:  "str",
-		BType: *types.NewFunctionType([]*types.Type{types.AnyType}, types.StringType),
+		Name:       "str",
+		InputType:  []*types.Type{types.AnyType},
+		OutputType: types.StringType,
 		Impl: func(args ...object.Object) object.Object {
 			arg := args[0]
 			return object.CreateString(arg.Content())
 		},
 	},
 	{
-		Name:  "type",
-		BType: *types.NewFunctionType([]*types.Type{types.AnyType}, types.StringType),
+		Name: "type",
+		InputType: []*types.Type{
+			types.AnyType,
+		},
+		OutputType: types.StringType,
 		Impl: func(args ...object.Object) object.Object {
 			arg := args[0]
 			// TODO: Find out how to provide the exact type, we can only provide type kind I think.
@@ -64,8 +90,9 @@ var Builtins = []BuiltinDefinition{
 		},
 	},
 	{
-		Name:  "exit",
-		BType: *types.NewFunctionType([]*types.Type{}, types.VoidType),
+		Name:       "exit",
+		InputType:  []*types.Type{},
+		OutputType: types.VoidType,
 		Impl: func(args ...object.Object) object.Object {
 			os.Exit(0)
 			return object.Null{}
