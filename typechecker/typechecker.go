@@ -142,8 +142,10 @@ func (t *TypeChecker) typeIndexExpression(node *ast.IndexExpression, scope *Type
 		return types.UnknownType
 	}
 }
-func isConcreteType(kind types.TypeKind) bool {
+func isConcreteType(t *TypeChecker, inputType *types.Type) bool {
+	kind := inputType.Kind
 	if kind == types.ARRAY || kind == types.HASH || kind == types.CLASS || kind == types.FUNCTION {
+		t.registerError("Expected primitive type, got %s", inputType)
 		return false
 	}
 	return true
@@ -157,40 +159,27 @@ func (t *TypeChecker) typeHashExpression(node *ast.HashExpression, scope *TypeSc
 
 	// DONE: Add a check that only concrete types can be keys (not arrays or hashes or custom types).
 	expectedKeyType := t.TypeCheck(node.Keys[0], scope)
-	if expectedKeyType == types.UnknownType {
+
+	if !isValidType(t, expectedKeyType) {
 		return types.UnknownType
 	}
 
-	if expectedKeyType == types.VoidType {
-		t.registerError("Expected concrete type, got void")
-		return types.UnknownType
-	}
-
-	if !isConcreteType(expectedKeyType.Kind) {
-		t.registerError("Expected concrete type, got %s", expectedKeyType.Kind)
+	if !isConcreteType(t, expectedKeyType) {
 		return types.UnknownType
 	}
 
 	expectedValueType := t.TypeCheck(node.Values[0], scope)
-	if expectedValueType == types.UnknownType {
-		return types.UnknownType
-	}
 
-	if expectedValueType == types.VoidType {
-		t.registerError("Expected concrete type, got void")
+	if !isValidType(t, expectedValueType) {
 		return types.UnknownType
 	}
 
 	for i, key := range node.Keys {
 		keyType := t.TypeCheck(key, scope)
 
-		// TODO: Combine unknown and voidtype check
-		if keyType == types.UnknownType {
+		// DONE: Combine unknown and voidtype check
+		if !isValidType(t, keyType) {
 			return types.UnknownType
-		}
-
-		if keyType == types.VoidType {
-			t.registerError("Expected some concrete type, got void")
 		}
 
 		if keyType != expectedKeyType {
@@ -199,13 +188,9 @@ func (t *TypeChecker) typeHashExpression(node *ast.HashExpression, scope *TypeSc
 
 		valueType := t.TypeCheck(node.Values[i], scope)
 
-		// TODO: Combine unknown and voidtype check
-		if valueType == types.UnknownType {
+		// DONE: Combine unknown and voidtype check
+		if !isValidType(t, valueType) {
 			return types.UnknownType
-		}
-
-		if valueType == types.VoidType {
-			t.registerError("Expected some concrete type, got void")
 		}
 
 		if valueType != expectedValueType {
@@ -227,24 +212,16 @@ func (t *TypeChecker) typeArrayExpression(node *ast.ArrayExpression, scope *Type
 	}
 
 	expectedType := t.TypeCheck(node.Elements[0], scope)
-	if expectedType == types.UnknownType {
-		return types.UnknownType
-	}
 
-	if expectedType == types.VoidType {
-		t.registerError("Expected some concrete type, got void")
+	if !isValidType(t, expectedType) {
 		return types.UnknownType
 	}
 
 	for _, element := range node.Elements[1:] {
 		elementType := t.TypeCheck(element, scope)
-		if elementType == types.UnknownType {
-			return types.UnknownType
-		}
 
-		// TODO: Combine unknown and voidtype check
-		if elementType == types.VoidType {
-			t.registerError("Expected some concrete type, got void")
+		// DONE: Combine unknown and voidtype check
+		if !isValidType(t, elementType) {
 			return types.UnknownType
 		}
 
@@ -281,7 +258,12 @@ func (t *TypeChecker) typePrefixExpression(node *ast.PrefixExpression, scope *Ty
 }
 func (t *TypeChecker) typeAssignmentExpression(node *ast.AssignmentStatement, scope *TypeScope) *types.Type {
 	valuetype := t.TypeCheck(node.Value, scope)
-	// TODO: Check if the value type is void, can't assign void to anything.
+	// DONE: Check if the value type is void, can't assign void to anything.
+
+	if valuetype == types.VoidType {
+		t.registerError("Value is void, can't assign void to variable")
+		return types.UnknownType
+	}
 
 	existingType := scope.Get(node.Name.Value)
 
@@ -354,7 +336,7 @@ SUPERTYPE:
 		// Needed to get typechecking working for builtins with any-type
 		if argtype.Kind == types.ANY {
 			for _, subtype := range argtype.Args {
-				// TODO: Compare the kind, not the raw type
+				// DONE: Compare the kind, not the raw type
 				if types.IsSubType(subtype, actualtype) {
 					// continue in the outer for loop using labels
 					continue SUPERTYPE
@@ -432,6 +414,7 @@ func (t *TypeChecker) typeLambdaExpression(node *ast.LambdaExpression, scope *Ty
 	for i, argtype := range node.Type {
 		name := node.Args[i].Value
 		functiontype.Args = append(functiontype.Args, argtype)
+
 		newScope.Add(name, argtype)
 	}
 
@@ -524,25 +507,21 @@ func (t *TypeChecker) typeReturnStatement(node *ast.ReturnStatement, scope *Type
 func (t *TypeChecker) typeLetStatement(node *ast.LetStatement, scope *TypeScope) *types.Type {
 	valuetype := t.TypeCheck(node.Value, scope)
 
-	// DONE: Check if the value is void (can't assign void to anything.)
-	if valuetype == types.VoidType {
-		t.registerError("Can't assign void to value.")
-		return types.UnknownType
-	}
-
-	if valuetype == types.UnknownType {
-		t.registerError("Can't assign uknown to value.")
+	if !isValidType(t, valuetype) {
 		return types.UnknownType
 	}
 
 	pretype := node.Type
 
-	if pretype == types.AutoType {
+	switch pretype {
+	case types.AutoType:
 		t.registerInfo("Auto-typed into %s", valuetype)
 		pretype = valuetype
-	} else if !types.IsEqual(valuetype, pretype) {
-		t.registerError("Expected type of %s (pre-type), got %s", pretype.Kind, valuetype.Kind)
-		return types.UnknownType
+	default:
+		if !types.IsEqual(valuetype, pretype) {
+			t.registerError("Expected type of %s (pre-type), got %s", pretype.Kind, valuetype.Kind)
+			return types.UnknownType
+		}
 	}
 
 	err := scope.Add(node.Name.Value, valuetype)
@@ -593,4 +572,17 @@ func (t *TypeChecker) addError(err error) {
 }
 func (t *TypeChecker) Errors() []TypeError {
 	return t.errors
+}
+func isValidType(t *TypeChecker, inputType *types.Type) bool {
+	if inputType == types.UnknownType {
+		t.registerError("Expected concrete-type, got unknown")
+		return false
+	}
+
+	if inputType == types.VoidType {
+		t.registerError("Expected concrete type, got void")
+		return false
+	}
+
+	return true
 }
