@@ -9,7 +9,7 @@ test:
 
 run-tremor:
 	@for file in $(FILES); do \
-		echo "Running tremor on $file ..."; \
+		echo "Running tremor on $$file ..."; \
 		./tremor "$$file" || { echo "Error: tremor failed on $$file"; exit 1; }; \
 		done
 	@echo "All files processed successfully."

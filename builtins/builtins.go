@@ -15,6 +15,7 @@ type BuiltinDefinition struct {
 	Impl       func(...object.Object) object.Object
 }
 
+// TODO: Implement traits and other things, or atleast think about it.
 var Builtins = []BuiltinDefinition{
 	{
 		// TODO: Evaluate object system, do we need string() and content() methods, do we need more methods?

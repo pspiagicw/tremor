@@ -9,5 +9,5 @@ end
 
 let result int = pow(2, 8)
 
-print(stri(result))
+print(str(result))
 

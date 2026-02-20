@@ -5,5 +5,5 @@ fn max(a int, b int) int then
     return b
 end
 
-print(stri(max(10, 3)))
+print(str(max(10, 3)))
 
