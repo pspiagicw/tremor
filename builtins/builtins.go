@@ -113,22 +113,14 @@ func GetBuiltins() map[string]object.Builtin {
 	return result
 }
 
-// DONE: Add dynamic types (any-type)
-// TODO: Add multi-arg support (var-arg)
-// DONE: Check if arity is every checked
 // Add other builtins
 
-// DONE: print
-// DONE: len
-// DONE: type (most important)
 // TODO: push
 // TODO: pop
 // TODO: sqrt
 // TODO: exp
 // TODO: min
 // TODO: min/max
-// DONE: string (str)
 // TODO: lowercase
 // TODO: uppercase
 // TODO: count
-// TODO: exit

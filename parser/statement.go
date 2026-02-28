@@ -68,7 +68,7 @@ func (p *Parser) parseFunctionStatement() *ast.FunctionStatement {
 		} else if p.current.Type == token.COMMA {
 			p.advance()
 		} else {
-			p.registerError(FAILED_FUNCTION_MESSAGE, p.current.Type)
+			p.registerError(FAILED_FUNCTION_MESSAGE, token.COMMA, p.current.Type)
 		}
 	}
 
@@ -189,7 +189,7 @@ func (p *Parser) parseFunctionTypeDec() *types.Type {
 		} else if p.current.Type == token.COMMA {
 			p.advance()
 		} else {
-			p.registerError(FAILED_FUNCTION_MESSAGE, p.current.Type)
+			p.registerError(FAILED_FUNCTION_MESSAGE, token.COMMA, p.current.Type)
 		}
 	}
 

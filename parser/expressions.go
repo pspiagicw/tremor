@@ -213,7 +213,7 @@ func (p *Parser) parseLambdaExpression() ast.Expression {
 		} else if p.current.Type == token.COMMA {
 			p.advance()
 		} else {
-			p.registerError(FAILED_FUNCTION_MESSAGE, p.current.Type)
+			p.registerError(FAILED_FUNCTION_MESSAGE, token.COMMA, p.current.Type)
 		}
 	}
 
@@ -250,8 +250,7 @@ func (p *Parser) parseArrayExpression() ast.Expression {
 		} else if p.current.Type == token.COMMA {
 			p.advance()
 		} else {
-			// TODO: Add a different message
-			p.registerError(FAILED_FUNCTION_MESSAGE, p.current.Type)
+			p.registerError(FAILED_FUNCTION_MESSAGE, token.COMMA, p.current.Type)
 		}
 	}
 
