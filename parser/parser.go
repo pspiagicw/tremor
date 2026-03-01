@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/pspiagicw/tremor/ast"
+	"github.com/pspiagicw/tremor/diagnostic"
 	"github.com/pspiagicw/tremor/lexer"
 	"github.com/pspiagicw/tremor/token"
 )
@@ -19,6 +20,8 @@ type Parser struct {
 	EOF              bool
 	errors           []ParserError
 	info             []string
+	source           string
+	file             string
 }
 
 func NewParser(l *lexer.Lexer) *Parser {
@@ -30,6 +33,8 @@ func NewParser(l *lexer.Lexer) *Parser {
 		info:             []string{},
 		EOF:              false,
 		peek:             l.Next(),
+		source:           l.Source(),
+		file:             l.FileName(),
 	}
 
 	p.registerPrefixFn(token.INTEGER, p.parseIntegerExpression)
@@ -110,10 +115,28 @@ func (p *Parser) Errors() []ParserError {
 	return p.errors
 }
 func (p *Parser) registerError(format string, args ...any) {
-	err := fmt.Errorf(format, args...)
+	err := diagnostic.NewAtToken(
+		"parser",
+		p.file,
+		p.source,
+		p.current,
+		tokenWidth(p.current),
+		format,
+		args...,
+	)
 	p.errors = append(p.errors, err)
 }
 func (p *Parser) registerInfo(format string, args ...any) {
 	msg := fmt.Sprintf(format, args...)
 	p.info = append(p.info, msg)
+}
+
+func tokenWidth(tok *token.Token) int {
+	if tok == nil {
+		return 1
+	}
+	if tok.Value == "" {
+		return 1
+	}
+	return len(tok.Value)
 }

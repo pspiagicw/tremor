@@ -5,6 +5,7 @@ import (
 	"reflect"
 
 	"github.com/pspiagicw/tremor/ast"
+	"github.com/pspiagicw/tremor/diagnostic"
 	"github.com/pspiagicw/tremor/token"
 	"github.com/pspiagicw/tremor/types"
 )
@@ -17,6 +18,8 @@ type TypeChecker struct {
 	errors  []TypeError
 	info    []string
 	typeMap TypeMap
+	source  string
+	file    string
 }
 
 func (t *TypeChecker) Flush() {
@@ -28,6 +31,7 @@ func NewTypeChecker() *TypeChecker {
 		errors:  []TypeError{},
 		info:    []string{},
 		typeMap: make(map[ast.Node]*types.Type),
+		file:    "<input>",
 	}
 
 	return t
@@ -35,6 +39,14 @@ func NewTypeChecker() *TypeChecker {
 
 func (t *TypeChecker) Map() TypeMap {
 	return t.typeMap
+}
+
+func (t *TypeChecker) SetSourceContext(file string, source string) {
+	if file == "" {
+		file = "<input>"
+	}
+	t.file = file
+	t.source = source
 }
 
 func (t *TypeChecker) TypeCheck(node ast.Node, scope *TypeScope) *types.Type {
@@ -85,7 +97,7 @@ func (t *TypeChecker) TypeCheck(node ast.Node, scope *TypeScope) *types.Type {
 	case *ast.ClassStatement:
 		nodeType = t.typeClassStatement(node, scope)
 	default:
-		t.registerError("Cannot type-check node of type %T.", node)
+		t.registerErrorAtNode(node, "Cannot type-check node of type %T.", node)
 		return types.UnknownType
 	}
 
@@ -110,7 +122,7 @@ func (t *TypeChecker) typeArrayIndex(node *ast.IndexExpression, scope *TypeScope
 	indexType := t.TypeCheck(node.Index, scope)
 
 	if indexType != types.IntType {
-		t.registerError("Array index must be int, got %s.", indexType)
+		t.registerErrorAtNode(node.Index, "Array index must be int, got %s.", indexType)
 		return types.UnknownType
 	}
 
@@ -123,7 +135,7 @@ func (t *TypeChecker) typeHashAccess(node *ast.IndexExpression, scope *TypeScope
 	indexType := t.TypeCheck(node.Index, scope)
 
 	if indexType != hashType.KeyType {
-		t.registerError("Hash key type mismatch: expected %s, got %s.", hashType.KeyType, indexType)
+		t.registerErrorAtNode(node.Index, "Hash key type mismatch: expected %s, got %s.", hashType.KeyType, indexType)
 		return types.UnknownType
 	}
 
@@ -138,7 +150,7 @@ func (t *TypeChecker) typeIndexExpression(node *ast.IndexExpression, scope *Type
 	case types.HASH:
 		return t.typeHashAccess(node, scope)
 	default:
-		t.registerError("Type %s is not indexable; expected array or hash.", hostType)
+		t.registerErrorAtNode(node.Caller, "Type %s is not indexable; expected array or hash.", hostType)
 		return types.UnknownType
 	}
 }
@@ -182,9 +194,9 @@ func (t *TypeChecker) typeHashExpression(node *ast.HashExpression, scope *TypeSc
 			return types.UnknownType
 		}
 
-			if keyType != expectedKeyType {
-				t.registerError("Hash key type mismatch: got %s, expected %s.", keyType, expectedKeyType)
-			}
+		if keyType != expectedKeyType {
+			t.registerErrorAtNode(key, "Hash key type mismatch: got %s, expected %s.", keyType, expectedKeyType)
+		}
 
 		valueType := t.TypeCheck(node.Values[i], scope)
 
@@ -193,9 +205,9 @@ func (t *TypeChecker) typeHashExpression(node *ast.HashExpression, scope *TypeSc
 			return types.UnknownType
 		}
 
-			if valueType != expectedValueType {
-				t.registerError("Hash value type mismatch: got %s, expected %s.", valueType, expectedValueType)
-			}
+		if valueType != expectedValueType {
+			t.registerErrorAtNode(node.Values[i], "Hash value type mismatch: got %s, expected %s.", valueType, expectedValueType)
+		}
 	}
 
 	hashType.KeyType = expectedKeyType
@@ -225,10 +237,10 @@ func (t *TypeChecker) typeArrayExpression(node *ast.ArrayExpression, scope *Type
 			return types.UnknownType
 		}
 
-			if elementType != expectedType {
-				t.registerError("Array element type mismatch: got %s, expected %s.", elementType, expectedType)
-				return types.UnknownType
-			}
+		if elementType != expectedType {
+			t.registerErrorAtNode(element, "Array element type mismatch: got %s, expected %s.", elementType, expectedType)
+			return types.UnknownType
+		}
 	}
 
 	arrType.KeyType = expectedType
@@ -238,17 +250,17 @@ func (t *TypeChecker) typeArrayExpression(node *ast.ArrayExpression, scope *Type
 func (t *TypeChecker) typePrefixExpression(node *ast.PrefixExpression, scope *TypeScope) *types.Type {
 	nodeType := t.TypeCheck(node.Right, scope)
 
-		if node.Operator.Type == token.MINUS {
-			if nodeType != types.IntType && nodeType != types.FloatType {
-				t.registerError("Unary '-' expects int or float, got %s.", nodeType)
-				return types.UnknownType
-			}
+	if node.Operator.Type == token.MINUS {
+		if nodeType != types.IntType && nodeType != types.FloatType {
+			t.registerErrorAtNode(node, "Unary '-' expects int or float, got %s.", nodeType)
+			return types.UnknownType
+		}
 		return nodeType
 	}
 
 	if node.Operator.Type == token.NOT {
 		if nodeType != types.BoolType {
-			t.registerError("Unary 'not' expects bool, got %s.", nodeType)
+			t.registerErrorAtNode(node, "Unary 'not' expects bool, got %s.", nodeType)
 			return types.UnknownType
 		}
 		return nodeType
@@ -261,19 +273,19 @@ func (t *TypeChecker) typeAssignmentExpression(node *ast.AssignmentStatement, sc
 	// DONE: Check if the value type is void, can't assign void to anything.
 
 	if valuetype == types.VoidType {
-		t.registerError("Cannot assign a value of type void.")
+		t.registerErrorAtNode(node, "Cannot assign a value of type void.")
 		return types.UnknownType
 	}
 
 	existingType := scope.Get(node.Name.Value)
 
 	if existingType == types.UnknownType {
-		t.registerError("Variable '%s' is not declared.", node.Name.Value)
+		t.registerErrorAtNode(node, "Variable '%s' is not declared.", node.Name.Value)
 		return types.UnknownType
 	}
 
 	if !reflect.DeepEqual(existingType, valuetype) {
-		t.registerError("Assignment type mismatch: variable is %s, value is %s.", existingType, valuetype)
+		t.registerErrorAtNode(node, "Assignment type mismatch: variable is %s, value is %s.", existingType, valuetype)
 		return types.UnknownType
 	}
 
@@ -300,13 +312,13 @@ func (t *TypeChecker) typeBinaryExpression(node *ast.BinaryExpression, scope *Ty
 	resolver, ok := binaryResolvers[operator]
 
 	if !ok {
-		t.registerError("Unsupported operator %q.", operator)
+		t.registerErrorAtNode(node, "Unsupported operator %q.", operator)
 		return types.UnknownType
 	}
 
 	expType, err := resolver(left, right)
 	if err != nil {
-		t.registerError("%s", err.Error())
+		t.registerErrorAtNode(node, "%s", err.Error())
 		return types.UnknownType
 	}
 
@@ -316,16 +328,16 @@ func (t *TypeChecker) typeFunctionCall(node *ast.FunctionCallExpression, scope *
 	ftype := scope.Get(node.Caller.String())
 
 	if ftype == types.UnknownType {
-		t.registerError("Function '%s' is not declared in this scope.", node.Caller.String())
+		t.registerErrorAtNode(node.Caller, "Function '%s' is not declared in this scope.", node.Caller.String())
 		return types.UnknownType
 	} else if ftype.Kind != types.FUNCTION {
-		t.registerError("'%s' is not a function.", node.Caller.String())
+		t.registerErrorAtNode(node.Caller, "'%s' is not a function.", node.Caller.String())
 		return types.UnknownType
 	}
 
 	// DONE: Add test for function call, test arity etc.
 	if len(ftype.Args) != len(node.Arguments) {
-		t.registerError("Function expects %d arguments, got %d.", len(ftype.Args), len(node.Arguments))
+		t.registerErrorAtNode(node, "Function expects %d arguments, got %d.", len(ftype.Args), len(node.Arguments))
 		return types.UnknownType
 	}
 
@@ -342,14 +354,14 @@ SUPERTYPE:
 					continue SUPERTYPE
 				}
 			}
-				t.registerError("Function argument %d does not match any allowed type %s; got %s.", i, argtype, actualtype)
-				return types.UnknownType
-			}
+			t.registerErrorAtNode(node.Arguments[i], "Function argument %d does not match any allowed type %s; got %s.", i, argtype, actualtype)
+			return types.UnknownType
+		}
 		// DONE: Implement better type comparison
-			if !types.IsEqual(actualtype, argtype) {
-				t.registerError("Function argument %d type mismatch: expected %s, got %s.", i, argtype, actualtype)
-				return types.UnknownType
-			}
+		if !types.IsEqual(actualtype, argtype) {
+			t.registerErrorAtNode(node.Arguments[i], "Function argument %d type mismatch: expected %s, got %s.", i, argtype, actualtype)
+			return types.UnknownType
+		}
 	}
 
 	return ftype.ReturnType
@@ -361,7 +373,7 @@ func (t *TypeChecker) typeFunctionStatement(node *ast.FunctionStatement, scope *
 	functiontype.ReturnType = node.ReturnType
 
 	if functiontype.ReturnType.Kind == types.ANY {
-		t.registerError("Function return type cannot be any.")
+		t.registerErrorAtNode(node, "Function return type cannot be any.")
 		return types.UnknownType
 	}
 
@@ -380,16 +392,16 @@ func (t *TypeChecker) typeFunctionStatement(node *ast.FunctionStatement, scope *
 
 	bodyType := t.TypeCheck(node.Body, newScope)
 
-		if bodyType.Kind == types.RETURN {
-			if bodyType.AlwaysReturns == false {
-				t.registerError("Function body must always return a value.")
-				return types.UnknownType
-			}
+	if bodyType.Kind == types.RETURN {
+		if bodyType.AlwaysReturns == false {
+			t.registerErrorAtNode(node, "Function body must always return a value.")
+			return types.UnknownType
+		}
 		bodyType = bodyType.ReturnType
 	}
 
 	if !types.IsEqual(bodyType, functiontype.ReturnType) {
-		t.registerError("Return type mismatch: expected %s, got %s.", functiontype.ReturnType, bodyType)
+		t.registerErrorAtNode(node, "Return type mismatch: expected %s, got %s.", functiontype.ReturnType, bodyType)
 		return bodyType
 	}
 
@@ -422,14 +434,14 @@ func (t *TypeChecker) typeLambdaExpression(node *ast.LambdaExpression, scope *Ty
 
 	if bodyType.Kind == types.RETURN {
 		if bodyType.AlwaysReturns == false {
-			t.registerError("Function body must always return a value.")
+			t.registerErrorAtNode(node, "Function body must always return a value.")
 			return types.UnknownType
 		}
 		bodyType = bodyType.ReturnType
 	}
 
 	if !types.IsEqual(bodyType, functiontype.ReturnType) {
-		t.registerError("Return type mismatch: expected %s, got %s.", functiontype.ReturnType, bodyType)
+		t.registerErrorAtNode(node, "Return type mismatch: expected %s, got %s.", functiontype.ReturnType, bodyType)
 		return bodyType
 	}
 	return functiontype
@@ -439,7 +451,7 @@ func (t *TypeChecker) typeIdentifierExpression(node *ast.IdentifierExpression, s
 	atype := scope.Get(node.Value.Value)
 
 	if atype == types.UnknownType {
-		t.registerError("Symbol '%s' is not declared in this scope.", node.Value.Value)
+		t.registerErrorAtNode(node, "Symbol '%s' is not declared in this scope.", node.Value.Value)
 	}
 
 	return atype
@@ -452,7 +464,7 @@ func (t *TypeChecker) typeIfStatement(node *ast.IfStatement, scope *TypeScope) *
 	}
 
 	if condtype != types.BoolType {
-		t.registerError("If condition must be bool, got %s.", condtype.Kind)
+		t.registerErrorAtNode(node.Condition, "If condition must be bool, got %s.", condtype.Kind)
 		return types.UnknownType
 	}
 
@@ -473,7 +485,7 @@ func (t *TypeChecker) typeIfStatement(node *ast.IfStatement, scope *TypeScope) *
 	if alttype != nil {
 		// Both consequence and alternative are present
 		if constype.Kind != alttype.Kind {
-			t.registerError("If branches must have matching types, got %s and %s.", constype.Kind, alttype.Kind)
+			t.registerErrorAtNode(node, "If branches must have matching types, got %s and %s.", constype.Kind, alttype.Kind)
 			return types.UnknownType
 		}
 
@@ -517,11 +529,11 @@ func (t *TypeChecker) typeLetStatement(node *ast.LetStatement, scope *TypeScope)
 	case types.AutoType:
 		t.registerInfo("Auto-typed into %s", valuetype)
 		pretype = valuetype
-		default:
-			if !types.IsEqual(valuetype, pretype) {
-				t.registerError("Declared type mismatch: expected %s, got %s.", pretype.Kind, valuetype.Kind)
-				return types.UnknownType
-			}
+	default:
+		if !types.IsEqual(valuetype, pretype) {
+			t.registerErrorAtNode(node, "Declared type mismatch: expected %s, got %s.", pretype.Kind, valuetype.Kind)
+			return types.UnknownType
+		}
 	}
 
 	err := scope.Add(node.Name.Value, valuetype)
@@ -561,14 +573,22 @@ func (t *TypeChecker) typeBlockStatement(node *ast.BlockStatement, scope *TypeSc
 	return types.VoidType
 }
 func (t *TypeChecker) registerError(format string, args ...any) {
-	t.errors = append(t.errors, fmt.Errorf(format, args...))
+	t.errors = append(t.errors, diagnostic.New("typechecker", t.file, t.source, format, args...))
+}
+func (t *TypeChecker) registerErrorAtNode(node ast.Node, format string, args ...any) {
+	tok := ast.NodeToken(node)
+	width := 1
+	if tok != nil && tok.Value != "" {
+		width = len(tok.Value)
+	}
+	t.errors = append(t.errors, diagnostic.NewAtToken("typechecker", t.file, t.source, tok, width, format, args...))
 }
 func (t *TypeChecker) registerInfo(format string, args ...any) {
 	msg := fmt.Sprintf(format, args...)
 	t.info = append(t.info, msg)
 }
 func (t *TypeChecker) addError(err error) {
-	t.errors = append(t.errors, err)
+	t.errors = append(t.errors, diagnostic.New("typechecker", t.file, t.source, "%s", err.Error()))
 }
 func (t *TypeChecker) Errors() []TypeError {
 	return t.errors

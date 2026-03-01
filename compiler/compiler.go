@@ -1,12 +1,12 @@
 package compiler
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/pspiagicw/fenc/emitter"
 	"github.com/pspiagicw/tremor/ast"
 	"github.com/pspiagicw/tremor/builtins"
+	"github.com/pspiagicw/tremor/diagnostic"
 	"github.com/pspiagicw/tremor/token"
 	"github.com/pspiagicw/tremor/typechecker"
 	"github.com/pspiagicw/tremor/types"
@@ -15,6 +15,8 @@ import (
 type Compiler struct {
 	e       *emitter.Emitter
 	typeMap typechecker.TypeMap
+	source  string
+	file    string
 }
 
 func (c *Compiler) Flush(e *emitter.Emitter) {
@@ -24,10 +26,19 @@ func (c *Compiler) SetTypeMap(tm typechecker.TypeMap) {
 	c.typeMap = tm
 }
 
+func (c *Compiler) SetSourceContext(file string, source string) {
+	if file == "" {
+		file = "<input>"
+	}
+	c.file = file
+	c.source = source
+}
+
 func NewCompiler(typeMap typechecker.TypeMap) *Compiler {
 	return &Compiler{
 		e:       emitter.NewEmitter(builtins.GetBuiltins()),
 		typeMap: typeMap,
+		file:    "<input>",
 	}
 }
 
@@ -76,7 +87,7 @@ func (c *Compiler) Compile(node ast.Node) error {
 	case *ast.ClassStatement:
 		return c.compileClassStatement(node)
 	default:
-		return fmt.Errorf("Can't compile type: %v", node.TypeInfo())
+		return c.compileError(node, "Cannot compile node type: %v.", node.TypeInfo())
 	}
 }
 
@@ -283,7 +294,7 @@ func (c *Compiler) compileBoolean(node *ast.BooleanExpression) error {
 func (c *Compiler) compileFloat(node *ast.FloatExpression) error {
 	value, err := strconv.ParseFloat(node.Value, 32)
 	if err != nil {
-		return fmt.Errorf("Error converting '%s' to float", node.Value)
+		return c.compileError(node, "Could not convert %q to float.", node.Value)
 	}
 	c.e.PushFloat(float32(value))
 	return nil
@@ -464,7 +475,7 @@ func (c *Compiler) compileBinary(node *ast.BinaryExpression) error {
 	case token.CONCAT:
 		return c.compileConcat(node)
 	default:
-		return fmt.Errorf("Can't compile binary operator: %s", operator)
+		return c.compileError(node, "Cannot compile binary operator %s.", operator)
 	}
 
 	return nil
@@ -504,7 +515,7 @@ func (c *Compiler) emitPlus(nodeType *types.Type) {
 func (c *Compiler) compileInteger(node *ast.IntegerExpression) error {
 	value, err := strconv.Atoi(node.Value)
 	if err != nil {
-		return fmt.Errorf("Error converting '%s' to integer", node.Value)
+		return c.compileError(node, "Could not convert %q to integer.", node.Value)
 	}
 	c.e.PushInt(value)
 	return nil
@@ -520,4 +531,13 @@ func (c *Compiler) compileAST(node *ast.AST) error {
 }
 func (c *Compiler) Bytecode() emitter.ByteCode {
 	return c.e.Bytecode()
+}
+
+func (c *Compiler) compileError(node ast.Node, format string, args ...any) error {
+	tok := ast.NodeToken(node)
+	width := 1
+	if tok != nil && tok.Value != "" {
+		width = len(tok.Value)
+	}
+	return diagnostic.NewAtToken("compiler", c.file, c.source, tok, width, format, args...)
 }

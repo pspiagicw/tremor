@@ -12,6 +12,7 @@ import (
 	"github.com/pspiagicw/goreland"
 	"github.com/pspiagicw/tremor/builtins"
 	"github.com/pspiagicw/tremor/compiler"
+	"github.com/pspiagicw/tremor/diagnostic"
 	"github.com/pspiagicw/tremor/lexer"
 	"github.com/pspiagicw/tremor/parser"
 	"github.com/pspiagicw/tremor/typechecker"
@@ -29,26 +30,27 @@ func StartREPL() {
 
 		value := getLine()
 
-		l := lexer.NewLexer(value)
+		l := lexer.NewLexerWithFile(value, "<repl>")
 		p := parser.NewParser(l)
 		ast := p.ParseAST()
 
 		if len(p.Errors()) != 0 {
 			goreland.LogError("Parser has errors!")
 			for _, err := range p.Errors() {
-				log.Printf("ERROR: %s\n", err)
+				log.Println(diagnostic.Render(err))
 			}
 			continue
 		}
 
 		fmt.Printf("AST: %s\n", ast.String())
 
+		t.SetSourceContext("<repl>", value)
 		valueType := t.TypeCheck(ast, emptyScope)
 
 		if len(t.Errors()) != 0 {
 			goreland.LogError("Typechecker has errors!")
 			for _, err := range t.Errors() {
-				log.Printf("ERROR: %s", err)
+				log.Println(diagnostic.Render(err))
 			}
 			// Reset typechecker messages.
 			t.Flush()
@@ -64,10 +66,11 @@ func StartREPL() {
 
 		tm := t.Map()
 		c.SetTypeMap(tm)
+		c.SetSourceContext("<repl>", value)
 		err := c.Compile(ast)
 
 		if err != nil {
-			log.Printf("Compiled faced errors!: %v", err)
+			log.Printf("Compiler faced errors:\n%s", diagnostic.Render(err))
 			continue
 		}
 

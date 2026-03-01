@@ -9,6 +9,7 @@ import (
 	"github.com/pspiagicw/tremor/ast"
 	"github.com/pspiagicw/tremor/builtins"
 	"github.com/pspiagicw/tremor/compiler"
+	"github.com/pspiagicw/tremor/diagnostic"
 	"github.com/pspiagicw/tremor/lexer"
 	"github.com/pspiagicw/tremor/parser"
 	"github.com/pspiagicw/tremor/typechecker"
@@ -16,12 +17,13 @@ import (
 
 func ExecFile(filename string) {
 	code := readFile(filename)
-	AST, typeMap := parseFile(code)
+	AST, typeMap := parseFile(code, filename)
 
 	c := compiler.NewCompiler(typeMap)
+	c.SetSourceContext(filename, code)
 	err := c.Compile(AST)
 	if err != nil {
-		log.Fatalf("ERROR: %s", err)
+		log.Fatalf("%s", diagnostic.Render(err))
 
 	}
 
@@ -43,17 +45,21 @@ func readFile(program string) string {
 	return string(content)
 }
 
-func parseFile(code string) (ast.Node, typechecker.TypeMap) {
-	l := lexer.NewLexer(code)
+func parseFile(code string, filename string) (ast.Node, typechecker.TypeMap) {
+	l := lexer.NewLexerWithFile(code, filename)
 	p := parser.NewParser(l)
 
 	ast := p.ParseAST()
 
 	if len(p.Errors()) != 0 {
-		log.Printf("Parser has errors: %v\n", p.Errors())
+		log.Println("Parser has errors:")
+		for _, err := range p.Errors() {
+			log.Println(diagnostic.Render(err))
+		}
 	}
 
 	tp := typechecker.NewTypeChecker()
+	tp.SetSourceContext(filename, code)
 	scope := typechecker.NewScope()
 	scope.SetupBuiltinFunctions()
 	_ = tp.TypeCheck(ast, scope)
@@ -61,7 +67,7 @@ func parseFile(code string) (ast.Node, typechecker.TypeMap) {
 	if len(tp.Errors()) != 0 {
 		log.Println("Type checker has errors")
 		for _, err := range tp.Errors() {
-			log.Printf("ERROR: %s\n", err)
+			log.Println(diagnostic.Render(err))
 		}
 		log.Fatal()
 	}

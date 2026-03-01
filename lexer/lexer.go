@@ -8,6 +8,7 @@ import (
 
 type Lexer struct {
 	input   string
+	file    string
 	curPos  int
 	readPos int
 	length  int
@@ -319,12 +320,28 @@ func (l *Lexer) Next() *token.Token {
 }
 
 func NewLexer(input string) *Lexer {
+	return NewLexerWithFile(input, "<input>")
+}
+
+func NewLexerWithFile(input string, file string) *Lexer {
+	if file == "" {
+		file = "<input>"
+	}
 	return &Lexer{
 		input:   input,
+		file:    file,
 		curPos:  -1,
 		readPos: 0,
 		length:  len(input),
 		line:    1,
 		column:  0,
 	}
+}
+
+func (l *Lexer) Source() string {
+	return l.input
+}
+
+func (l *Lexer) FileName() string {
+	return l.file
 }
