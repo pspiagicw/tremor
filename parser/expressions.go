@@ -213,7 +213,7 @@ func (p *Parser) parseLambdaExpression() ast.Expression {
 		} else if p.current.Type == token.COMMA {
 			p.advance()
 		} else {
-			p.registerError(FAILED_FUNCTION_MESSAGE, token.COMMA, p.current.Type)
+			p.registerError("Expected ',' or ')', got %s.", p.current.Type)
 		}
 	}
 
@@ -250,7 +250,7 @@ func (p *Parser) parseArrayExpression() ast.Expression {
 		} else if p.current.Type == token.COMMA {
 			p.advance()
 		} else {
-			p.registerError(FAILED_FUNCTION_MESSAGE, token.COMMA, p.current.Type)
+			p.registerError("Expected ',' or ']', got %s.", p.current.Type)
 		}
 	}
 
@@ -279,8 +279,7 @@ func (p *Parser) parseHashExpression() ast.Expression {
 		} else if p.current.Type == token.COMMA {
 			p.advance() // Move over the comma
 		} else {
-			// TODO: Add a better message
-			p.registerError("Expected comma, got '%s'", p.current.Type)
+			p.registerError("Expected ',' or '}', got %s.", p.current.Type)
 		}
 	}
 

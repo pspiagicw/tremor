@@ -68,7 +68,7 @@ func (p *Parser) parseFunctionStatement() *ast.FunctionStatement {
 		} else if p.current.Type == token.COMMA {
 			p.advance()
 		} else {
-			p.registerError(FAILED_FUNCTION_MESSAGE, token.COMMA, p.current.Type)
+			p.registerError("Expected ',' or ')', got %s.", p.current.Type)
 		}
 	}
 
@@ -120,10 +120,10 @@ func (p *Parser) parseTypeDec(auto bool) *types.Type {
 		return p.parseComplexType()
 	default:
 		if auto {
-			p.registerInfo("Got %s, assuming 'auto' typing", p.current.Type)
+			p.registerInfo("No type info found, using type inference.")
 			return types.AutoType
 		} else {
-			p.registerError("Can't parse type, got %s", p.current.Type)
+			p.registerError("Unknown type token %s.", p.current.Type)
 			return types.UnknownType
 		}
 	}
@@ -189,7 +189,7 @@ func (p *Parser) parseFunctionTypeDec() *types.Type {
 		} else if p.current.Type == token.COMMA {
 			p.advance()
 		} else {
-			p.registerError(FAILED_FUNCTION_MESSAGE, token.COMMA, p.current.Type)
+			p.registerError("Expected ',' or ')', got %s.", p.current.Type)
 		}
 	}
 
@@ -262,7 +262,7 @@ func (p *Parser) parseBlockStatement() *ast.BlockStatement {
 		p.current.Type != token.ELSE {
 		s := p.parseStatement()
 		if s == nil {
-			p.registerError("Can't parse block statement")
+			p.registerError("Could not parse a statement inside this block.")
 			return nil
 		}
 		b.Statements = append(b.Statements, s)
