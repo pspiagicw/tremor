@@ -20,6 +20,8 @@ import (
 )
 
 func StartREPL() {
+	debugMode := os.Getenv("TREMOR_DEBUG") == "1"
+
 	emptyScope := typechecker.NewScope()
 	emptyScope.SetupBuiltinFunctions()
 	t := typechecker.NewTypeChecker()
@@ -42,7 +44,9 @@ func StartREPL() {
 			continue
 		}
 
-		fmt.Printf("AST: %s\n", ast.String())
+		if debugMode {
+			fmt.Printf("AST: %s\n", ast.String())
+		}
 
 		t.SetSourceContext("<repl>", value)
 		valueType := t.TypeCheck(ast, emptyScope)
@@ -62,7 +66,9 @@ func StartREPL() {
 			continue
 		}
 
-		fmt.Printf("TYPE: %s\n", valueType)
+		if debugMode {
+			fmt.Printf("TYPE: %s\n", valueType)
+		}
 
 		tm := t.Map()
 		c.SetTypeMap(tm)
@@ -75,8 +81,10 @@ func StartREPL() {
 		}
 
 		bytecode := c.Bytecode()
-		// dump.Constants(bytecode.Constants)
-		dump.Dump(bytecode.Tape)
+		if debugMode {
+			// dump.Constants(bytecode.Constants)
+			dump.Dump(bytecode.Tape)
+		}
 
 		// fmt.Println("==== OUTPUT === ")
 
