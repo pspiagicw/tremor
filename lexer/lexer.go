@@ -12,6 +12,8 @@ type Lexer struct {
 	readPos int
 	length  int
 	current string
+	line    int
+	column  int
 	EOF     bool
 }
 
@@ -24,9 +26,23 @@ func (l *Lexer) peek() string {
 
 func (l *Lexer) advance() {
 	if l.readPos == l.length {
+		if !l.EOF {
+			if l.current == "\n" {
+				l.line += 1
+				l.column = 1
+			} else {
+				l.column += 1
+			}
+		}
 		l.EOF = true
 		l.current = ""
 	} else {
+		if l.current == "\n" {
+			l.line += 1
+			l.column = 1
+		} else {
+			l.column += 1
+		}
 		l.curPos = l.readPos
 		l.readPos += 1
 		l.current = string(l.input[l.curPos])
@@ -46,8 +62,14 @@ func (l *Lexer) whitespace() {
 	}
 }
 
-func newToken(tokentype token.TokenType, value string) *token.Token {
-	return &token.Token{Type: tokentype, Value: value}
+func newToken(tokentype token.TokenType, value string, offset int, line int, column int) *token.Token {
+	return &token.Token{
+		Type:   tokentype,
+		Value:  value,
+		Offset: offset,
+		Line:   line,
+		Column: column,
+	}
 }
 func isAlpha(input string) bool {
 	if len(input) == 0 {
@@ -191,99 +213,108 @@ func predictType(input string) token.TokenType {
 func (l *Lexer) Next() *token.Token {
 	l.advance()
 	l.whitespace()
+
+	startOffset := l.curPos
+	startLine := l.line
+	startColumn := l.column
+
+	emit := func(tokentype token.TokenType, value string) *token.Token {
+		return newToken(tokentype, value, startOffset, startLine, startColumn)
+	}
+
 	if l.EOF {
-		return newToken(token.EOF, "")
+		return newToken(token.EOF, "", l.readPos, l.line, l.column)
 	}
 
 	switch l.current {
 	case "+":
-		return newToken(token.PLUS, l.current)
+		return emit(token.PLUS, l.current)
 	case "-":
 		if l.peek() == "-" {
 			l.comment()
 			return l.Next()
 		}
-		return newToken(token.MINUS, l.current)
+		return emit(token.MINUS, l.current)
 	case "%":
-		return newToken(token.MODULUS, l.current)
+		return emit(token.MODULUS, l.current)
 	case ",":
-		return newToken(token.COMMA, l.current)
+		return emit(token.COMMA, l.current)
 	case "^":
-		return newToken(token.EXPONENT, l.current)
+		return emit(token.EXPONENT, l.current)
 	case "*":
-		return newToken(token.MULTIPLY, l.current)
+		return emit(token.MULTIPLY, l.current)
 	case "/":
-		return newToken(token.SLASH, l.current)
+		return emit(token.SLASH, l.current)
 	case ":":
-		return newToken(token.COLON, l.current)
+		return emit(token.COLON, l.current)
 	case "(":
-		return newToken(token.LPAREN, l.current)
+		return emit(token.LPAREN, l.current)
 	case ")":
-		return newToken(token.RPAREN, l.current)
+		return emit(token.RPAREN, l.current)
 	case "{":
-		return newToken(token.LBRACE, l.current)
+		return emit(token.LBRACE, l.current)
 	case "}":
-		return newToken(token.RBRACE, l.current)
+		return emit(token.RBRACE, l.current)
 	case "[":
 		if l.peek() == "[" {
 			l.advance()
 			value := l.longString()
-			return newToken(token.STRING_MULTILINE, value)
+			return emit(token.STRING_MULTILINE, value)
 		}
-		return newToken(token.LSQUARE, l.current)
+		return emit(token.LSQUARE, l.current)
 	case "]":
-		return newToken(token.RSQUARE, l.current)
+		return emit(token.RSQUARE, l.current)
 	case ".":
 		if l.peek() == "." {
 			l.advance()
 			if l.peek() == "." {
 				l.advance()
-				return newToken(token.ELLIPSIS, "...")
+				return emit(token.ELLIPSIS, "...")
 			}
-			return newToken(token.CONCAT, "..")
+			return emit(token.CONCAT, "..")
 		}
-		return newToken(token.DOT, l.current)
+		return emit(token.DOT, l.current)
 	case "=":
 		if l.peek() == "=" {
 			l.advance()
-			return newToken(token.EQ, "==")
+			return emit(token.EQ, "==")
 		}
-		return newToken(token.ASSIGN, l.current)
+		return emit(token.ASSIGN, l.current)
 	case "!":
 		if l.peek() == "=" {
 			l.advance()
-			return newToken(token.NEQ, "!=")
+			return emit(token.NEQ, "!=")
 		}
-		return newToken(token.BANG, l.current)
+		return emit(token.BANG, l.current)
 	case "<":
 		if l.peek() == "=" {
 			l.advance()
-			return newToken(token.LTE, "<=")
+			return emit(token.LTE, "<=")
 		}
-		return newToken(token.LT, l.current)
+		return emit(token.LT, l.current)
 	case ">":
 		if l.peek() == "=" {
 			l.advance()
-			return newToken(token.GTE, ">=")
+			return emit(token.GTE, ">=")
 		}
-		return newToken(token.GT, l.current)
+		return emit(token.GT, l.current)
 	case "'":
 		value := l.string(l.current)
-		return newToken(token.STRING_SINGLE, value)
+		return emit(token.STRING_SINGLE, value)
 	case "\"":
 		value := l.string(l.current)
-		return newToken(token.STRING_DOUBLE, value)
+		return emit(token.STRING_DOUBLE, value)
 	default:
 		if isAlpha(l.current) {
 			value := l.identifier()
 			tokentype := predictType(value)
-			return newToken(tokentype, value)
+			return emit(tokentype, value)
 		} else if isDigit(l.current) {
 			value := l.number()
 			tokentype := predictNumber(value)
-			return newToken(tokentype, value)
+			return emit(tokentype, value)
 		}
-		return newToken(token.INVALID, l.current)
+		return emit(token.INVALID, l.current)
 	}
 }
 
@@ -293,5 +324,7 @@ func NewLexer(input string) *Lexer {
 		curPos:  -1,
 		readPos: 0,
 		length:  len(input),
+		line:    1,
+		column:  0,
 	}
 }

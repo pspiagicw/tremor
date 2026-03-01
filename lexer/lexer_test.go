@@ -205,6 +205,134 @@ func TestTypes(t *testing.T) {
 	testToken(t, input, expected)
 }
 
+func TestTokenLocations(t *testing.T) {
+	input := "a\n==\n\"hi\""
+	lexer := NewLexer(input)
+
+	tests := []struct {
+		ttype  token.TokenType
+		value  string
+		offset int
+		line   int
+		column int
+	}{
+		{ttype: token.IDENTIFIER, value: "a", offset: 0, line: 1, column: 1},
+		{ttype: token.EQ, value: "==", offset: 2, line: 2, column: 1},
+		{ttype: token.STRING_DOUBLE, value: "hi", offset: 5, line: 3, column: 1},
+		{ttype: token.EOF, value: "", offset: 9, line: 3, column: 5},
+	}
+
+	for _, tt := range tests {
+		tok := lexer.Next()
+		if tok.Type != tt.ttype {
+			t.Fatalf("Token type mismatch: got %s expected %s", tok.Type, tt.ttype)
+		}
+		if tok.Value != tt.value {
+			t.Fatalf("Token value mismatch: got %s expected %s", tok.Value, tt.value)
+		}
+		if tok.Offset != tt.offset {
+			t.Fatalf("Token offset mismatch: got %d expected %d", tok.Offset, tt.offset)
+		}
+		if tok.Line != tt.line {
+			t.Fatalf("Token line mismatch: got %d expected %d", tok.Line, tt.line)
+		}
+		if tok.Column != tt.column {
+			t.Fatalf("Token column mismatch: got %d expected %d", tok.Column, tt.column)
+		}
+	}
+}
+
+func TestTokenLocationsComplexDeclaration(t *testing.T) {
+	input := "let total int = value_1 + 42"
+	lexer := NewLexer(input)
+
+	tests := []struct {
+		ttype  token.TokenType
+		value  string
+		offset int
+		line   int
+		column int
+	}{
+		{ttype: token.LET, value: "let", offset: 0, line: 1, column: 1},
+		{ttype: token.IDENTIFIER, value: "total", offset: 4, line: 1, column: 5},
+		{ttype: token.TYPE, value: "int", offset: 10, line: 1, column: 11},
+		{ttype: token.ASSIGN, value: "=", offset: 14, line: 1, column: 15},
+		{ttype: token.IDENTIFIER, value: "value_1", offset: 16, line: 1, column: 17},
+		{ttype: token.PLUS, value: "+", offset: 24, line: 1, column: 25},
+		{ttype: token.INTEGER, value: "42", offset: 26, line: 1, column: 27},
+		{ttype: token.EOF, value: "", offset: 28, line: 1, column: 29},
+	}
+
+	for _, tt := range tests {
+		tok := lexer.Next()
+		if tok.Type != tt.ttype {
+			t.Fatalf("Token type mismatch: got %s expected %s", tok.Type, tt.ttype)
+		}
+		if tok.Value != tt.value {
+			t.Fatalf("Token value mismatch: got %s expected %s", tok.Value, tt.value)
+		}
+		if tok.Offset != tt.offset {
+			t.Fatalf("Token offset mismatch: got %d expected %d", tok.Offset, tt.offset)
+		}
+		if tok.Line != tt.line {
+			t.Fatalf("Token line mismatch: got %d expected %d", tok.Line, tt.line)
+		}
+		if tok.Column != tt.column {
+			t.Fatalf("Token column mismatch: got %d expected %d", tok.Column, tt.column)
+		}
+	}
+}
+
+func TestTokenLocationsFunctionImplementation(t *testing.T) {
+	input := "fn add(a int, b int) int then\n    return a + b\nend"
+	lexer := NewLexer(input)
+
+	tests := []struct {
+		ttype  token.TokenType
+		value  string
+		offset int
+		line   int
+		column int
+	}{
+		{ttype: token.FN, value: "fn", offset: 0, line: 1, column: 1},
+		{ttype: token.IDENTIFIER, value: "add", offset: 3, line: 1, column: 4},
+		{ttype: token.LPAREN, value: "(", offset: 6, line: 1, column: 7},
+		{ttype: token.IDENTIFIER, value: "a", offset: 7, line: 1, column: 8},
+		{ttype: token.TYPE, value: "int", offset: 9, line: 1, column: 10},
+		{ttype: token.COMMA, value: ",", offset: 12, line: 1, column: 13},
+		{ttype: token.IDENTIFIER, value: "b", offset: 14, line: 1, column: 15},
+		{ttype: token.TYPE, value: "int", offset: 16, line: 1, column: 17},
+		{ttype: token.RPAREN, value: ")", offset: 19, line: 1, column: 20},
+		{ttype: token.TYPE, value: "int", offset: 21, line: 1, column: 22},
+		{ttype: token.THEN, value: "then", offset: 25, line: 1, column: 26},
+		{ttype: token.RETURN, value: "return", offset: 34, line: 2, column: 5},
+		{ttype: token.IDENTIFIER, value: "a", offset: 41, line: 2, column: 12},
+		{ttype: token.PLUS, value: "+", offset: 43, line: 2, column: 14},
+		{ttype: token.IDENTIFIER, value: "b", offset: 45, line: 2, column: 16},
+		{ttype: token.END, value: "end", offset: 47, line: 3, column: 1},
+		{ttype: token.EOF, value: "", offset: 50, line: 3, column: 4},
+	}
+
+	for _, tt := range tests {
+		tok := lexer.Next()
+		if tok.Type != tt.ttype {
+			t.Fatalf("Token type mismatch: got %s expected %s", tok.Type, tt.ttype)
+		}
+		if tok.Value != tt.value {
+			t.Fatalf("Token value mismatch: got %s expected %s", tok.Value, tt.value)
+		}
+		if tok.Offset != tt.offset {
+			t.Fatalf("Token offset mismatch: got %d expected %d", tok.Offset, tt.offset)
+		}
+		if tok.Line != tt.line {
+			t.Fatalf("Token line mismatch: got %d expected %d", tok.Line, tt.line)
+		}
+		if tok.Column != tt.column {
+			t.Fatalf("Token column mismatch: got %d expected %d", tok.Column, tt.column)
+		}
+	}
+}
+
 func testToken(t *testing.T, input string, expectedTokens []token.Token) {
 	lexer := NewLexer(input)
 
