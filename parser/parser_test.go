@@ -7,6 +7,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestPrefixExpression(t *testing.T) {
+	input := `- 5 + (not true)`
+
+	expected := `((- 5) + (not true))`
+
+	testParser(t, input, expected)
+}
+
 func TestLetStatement(t *testing.T) {
 	input := "let a int = 1"
 

@@ -9,7 +9,6 @@ import (
 
 	"github.com/pspiagicw/fenc/dump"
 	"github.com/pspiagicw/fenc/vm"
-	"github.com/pspiagicw/goreland"
 	"github.com/pspiagicw/tremor/builtins"
 	"github.com/pspiagicw/tremor/compiler"
 	"github.com/pspiagicw/tremor/diagnostic"
@@ -37,7 +36,6 @@ func StartREPL() {
 		ast := p.ParseAST()
 
 		if len(p.Errors()) != 0 {
-			goreland.LogError("Parser has errors!")
 			for _, err := range p.Errors() {
 				log.Println(diagnostic.Render(err))
 			}
@@ -52,7 +50,6 @@ func StartREPL() {
 		valueType := t.TypeCheck(ast, emptyScope)
 
 		if len(t.Errors()) != 0 {
-			goreland.LogError("Typechecker has errors!")
 			for _, err := range t.Errors() {
 				log.Println(diagnostic.Render(err))
 			}

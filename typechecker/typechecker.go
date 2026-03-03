@@ -216,7 +216,6 @@ func (t *TypeChecker) typeHashExpression(node *ast.HashExpression, scope *TypeSc
 	return hashType
 }
 func (t *TypeChecker) typeArrayExpression(node *ast.ArrayExpression, scope *TypeScope) *types.Type {
-	// TODO: Check this once.
 	arrType := &types.Type{Kind: types.ARRAY}
 
 	if len(node.Elements) == 0 {
@@ -232,7 +231,6 @@ func (t *TypeChecker) typeArrayExpression(node *ast.ArrayExpression, scope *Type
 	for _, element := range node.Elements[1:] {
 		elementType := t.TypeCheck(element, scope)
 
-		// DONE: Combine unknown and voidtype check
 		if !isValidType(t, elementType) {
 			return types.UnknownType
 		}

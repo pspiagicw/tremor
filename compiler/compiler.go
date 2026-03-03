@@ -86,8 +86,37 @@ func (c *Compiler) Compile(node ast.Node) error {
 		return c.compileIndexExpression(node)
 	case *ast.ClassStatement:
 		return c.compileClassStatement(node)
+	case *ast.PrefixExpression:
+		return c.compilePrefixExpression(node)
 	default:
 		return c.compileError(node, "Cannot compile node type: %v.", node.TypeInfo())
+	}
+}
+
+func (c *Compiler) compilePrefixExpression(node *ast.PrefixExpression) error {
+	err := c.Compile(node.Right)
+	if err != nil {
+		return err
+	}
+
+	switch node.Operator.Type {
+	case token.MINUS:
+		valueType := c.typeMap[node.Right]
+
+		switch valueType {
+		case types.IntType:
+			c.e.NegateInt()
+		case types.FloatType:
+			c.e.NegateFloat()
+		}
+		return nil
+
+	case token.NOT:
+
+		c.e.Not()
+		return nil
+	default:
+		return c.compileError(node, "Cannot compile prefix expression with operator: %v.", node.Operator)
 	}
 }
 

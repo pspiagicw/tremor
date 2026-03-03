@@ -166,13 +166,11 @@ func TestBoolOr(t *testing.T) {
 }
 
 func TestBoolNot(t *testing.T) {
-	// TODO: Implement prefix expression
-	t.Skip()
 	input := `not true`
 
 	expected := []code.Instruction{
 		{OpCode: code.PUSH, Args: []int{0}},
-		// {OpCode: code.NOT},
+		{OpCode: code.NOT},
 	}
 
 	testCompiler(t, input, expected)
@@ -522,12 +520,14 @@ func TestAssignmentStatement(t *testing.T) {
 
 func TestPrefixExpressions(t *testing.T) {
 	// Add support in the emitter and VM.
-	t.Skip()
-	// input := `-5 not true`
+	input := `-5`
 	//
-	// expected := []code.Instruction{
-	// 	{OpCode: code.PUSH, Args: []int{0}},
-	// }
+	expected := []code.Instruction{
+		{OpCode: code.PUSH, Args: []int{0}},
+		{OpCode: code.NEGATE_INT},
+	}
+
+	testCompiler(t, input, expected)
 }
 
 func TestArrayExpression(t *testing.T) {
