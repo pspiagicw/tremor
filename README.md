@@ -1,6 +1,8 @@
 # `tremor`
 
-`tremor` is a small statically typed programming language implemented in Go. It takes `tremor` source code through a classic compiler pipeline:
+`tremor` is a small statically typed programming language implemented in Go. 
+
+It takes `tremor` source code through a classic compiler pipeline:
 
 `lexer -> parser -> typechecker -> compiler -> fenc bytecode -> fenc VM`
 
