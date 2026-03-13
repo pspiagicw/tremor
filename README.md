@@ -1,6 +1,6 @@
-# Tremor
+# `tremor`
 
-Tremor is a small statically typed programming language implemented in Go. It takes Tremor source code through a classic compiler pipeline:
+`tremor` is a small statically typed programming language implemented in Go. It takes `tremor` source code through a classic compiler pipeline:
 
 `lexer -> parser -> typechecker -> compiler -> fenc bytecode -> fenc VM`
 
@@ -8,7 +8,7 @@ The project is focused on language implementation rather than a large standard l
 
 ## What the project is
 
-Tremor is best understood as an experimental language and compiler project:
+`tremor` is best understood as an experimental language and compiler project:
 
 - The front end is implemented in this repository.
 - Bytecode emission and execution are delegated to [`fenc`](../fenc) through its emitter and VM APIs.
@@ -88,14 +88,14 @@ More examples are available in `examples/`.
 
 ## How execution works
 
-When a file is executed, Tremor does the following:
+When a file is executed, `tremor` does the following:
 
 1. Reads the source file.
 2. Lexes and parses it into an AST.
 3. Typechecks the AST and records node-to-type information.
 4. Compiles the typed AST into `fenc` bytecode.
 5. Dumps constants and bytecode instructions in batch mode.
-6. Runs the bytecode on the `fenc` VM with Tremor built-ins attached.
+6. Runs the bytecode on the `fenc` VM with `tremor` built-ins attached.
 
 The REPL follows the same general path but works one input at a time. If `TREMOR_DEBUG=1` is set, it also prints the AST and bytecode information for each entered expression.
 
@@ -180,7 +180,7 @@ Note that the `make test` target installs and uses `tparse` for prettier test ou
 
 This is the part worth reading before extending the language.
 
-- Tremor depends on a local `../fenc` checkout, so a clean clone of this repository alone is not enough to build.
+- `tremor` depends on a local `../fenc` checkout, so a clean clone of this repository alone is not enough to build.
 - Some features are present in the parser and typechecker but are still experimental from a full language-design perspective.
 - The examples directory includes files that are clearly exploratory; not every example should be treated as a guaranteed passing integration test.
 - `batch` execution currently dumps constants and bytecode before running the VM, which is helpful for development but noisy for end users.
@@ -190,4 +190,5 @@ This is the part worth reading before extending the language.
 
 ## Why this codebase is interesting
 
-Tremor is a compact compiler project with a clean separation between stages. If you want to experiment with language features, improve diagnostics, or study how a typed AST gets lowered into bytecode, the codebase is small enough to navigate quickly while still covering the full pipeline from source text to VM execution.
+`tremor` is a compact compiler project with a clean separation between stages.
+If you want to experiment with language features, improve diagnostics, or study how a typed AST gets lowered into bytecode, the codebase is small enough to navigate quickly while still covering the full pipeline from source text to VM execution.
